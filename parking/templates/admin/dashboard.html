@@ -1,0 +1,808 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Parkease</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --dark: #1e293b;
+            --light: #f8fafc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+        }
+
+        /* Enhanced Header with Navigation */
+        .admin-header {
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            color: white;
+            padding: 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-top {
+            padding: 20px 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .header-top h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .header-top p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .header-nav {
+            padding: 0 40px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .nav-item {
+            padding: 15px 25px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            color: white;
+            background: rgba(255,255,255,0.1);
+            border-bottom-color: white;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .header-actions a {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .header-actions a:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Main Container */
+        .dashboard-container {
+            max-width: 1600px;
+            margin: 30px auto;
+            padding: 0 40px;
+        }
+
+        /* Stats Grid with Wave Animation */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -100%;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, currentColor, transparent);
+            animation: wave 3s infinite;
+        }
+
+        @keyframes wave {
+            to {
+                left: 100%;
+            }
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        .stat-card .icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card h3 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .stat-card.primary { color: var(--primary); }
+        .stat-card.success { color: var(--success); }
+        .stat-card.warning { color: var(--warning); }
+        .stat-card.danger { color: var(--danger); }
+        .stat-card.info { color: var(--info); }
+
+        /* Chart Section */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .chart-card h3 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chart-card canvas {
+            max-height: 300px;
+        }
+
+        /* Section */
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light);
+        }
+
+        .section-header h2 {
+            font-size: 22px;
+            color: var(--dark);
+        }
+
+        .section-header a {
+            padding: 8px 16px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .section-header a:hover {
+            background: #4f46e5;
+            transform: translateY(-2px);
+        }
+
+        /* Flow Wave Progress */
+        .flow-wave {
+            width: 100%;
+            height: 60px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            background: var(--light);
+        }
+
+        .flow-wave-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--info), var(--warning));
+            background-size: 200% 100%;
+            animation: flowWave 3s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        @keyframes flowWave {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        /* Location Stats */
+        .location-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .location-card {
+            border: 2px solid var(--light);
+            padding: 20px;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .location-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.1);
+        }
+
+        .location-card h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .location-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .location-stat {
+            text-align: center;
+        }
+
+        .location-stat .value {
+            font-size: 24px;
+            font-weight: 700;
+            display: block;
+        }
+
+        .location-stat .label {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        .location-stat.available .value { color: var(--success); }
+        .location-stat.occupied .value { color: var(--danger); }
+        .location-stat.total .value { color: var(--info); }
+
+        .occupancy-bar {
+            margin-top: 15px;
+            height: 8px;
+            background: var(--light);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .occupancy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--warning));
+            transition: width 0.5s;
+        }
+
+        /* Recent Sessions Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--light);
+        }
+
+        th {
+            background: var(--light);
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: var(--light);
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge.active {
+            background: #dcfce7;
+            color: var(--success);
+        }
+
+        .badge.completed {
+            background: #dbeafe;
+            color: var(--info);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 0 20px;
+            }
+
+            .header-top {
+                padding: 15px 20px;
+            }
+
+            .header-nav {
+                padding: 0 20px;
+                overflow-x: auto;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 15px;
+            }
+
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Header -->
+    <div class="admin-header">
+        <div class="header-top">
+            <h1>🎛️ Admin Dashboard</h1>
+            <p>Parkease - Smart Parking Management</p>
+            <div class="header-actions">
+                <a href="/admin/">🔧 Django Admin</a>
+                <a href="{% url 'admin_profile' %}">👤 My Profile</a>
+                <a href="{% url 'home' %}">🏠 User View</a>
+                <a href="{% url 'user_logout' %}">🚪 Logout</a>
+            </div>
+        </div>
+        <div class="header-nav">
+            <a href="{% url 'admin_dashboard' %}" class="nav-item active">
+                📊 Dashboard
+            </a>
+            <a href="/admin/parking/parkinglot/" class="nav-item">
+                🅿️ Locations
+            </a>
+            <a href="/admin/parking/parkingslot/" class="nav-item">
+                🔧 Slots
+            </a>
+            <a href="/admin/parking/monthlypass/" class="nav-item">
+                🎫 Passes
+            </a>
+            <a href="/admin/parking/parkingsession/" class="nav-item">
+                📋 Sessions
+            </a>
+            <a href="/admin/parking/supportticket/" class="nav-item">
+                🎟️ Support
+            </a>
+            <a href="/admin/auth/user/" class="nav-item">
+                👥 Users
+            </a>
+        </div>
+    </div>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        
+        <!-- Overview Stats -->
+        <div class="stats-grid">
+            <div class="stat-card primary">
+                <div class="icon">🅿️</div>
+                <h3>{{ total_lots }}</h3>
+                <p>Parking Locations</p>
+            </div>
+
+            <div class="stat-card success">
+                <div class="icon">🟢</div>
+                <h3>{{ available_slots }}</h3>
+                <p>Available Slots</p>
+            </div>
+
+            <div class="stat-card danger">
+                <div class="icon">🔴</div>
+                <h3>{{ occupied_slots }}</h3>
+                <p>Occupied Slots</p>
+            </div>
+
+            <div class="stat-card info">
+                <div class="icon">📊</div>
+                <h3>{{ total_slots }}</h3>
+                <p>Total Slots</p>
+            </div>
+
+            <div class="stat-card warning">
+                <div class="icon">🚗</div>
+                <h3>{{ total_vehicles }}</h3>
+                <p>Registered Vehicles</p>
+            </div>
+
+            <div class="stat-card primary">
+                <div class="icon">📋</div>
+                <h3>{{ active_bookings }}</h3>
+                <p>Active Bookings</p>
+            </div>
+
+            <div class="stat-card success">
+                <div class="icon">💰</div>
+                <h3>₹{{ today_revenue }}</h3>
+                <p>Today's Revenue</p>
+            </div>
+
+            <div class="stat-card info">
+                <div class="icon">💳</div>
+                <h3>₹{{ month_revenue }}</h3>
+                <p>This Month Revenue</p>
+            </div>
+        </div>
+
+        <!-- System Health Flow Wave -->
+        <div class="section">
+            <div class="section-header">
+                <h2>🌊 System Health Status</h2>
+            </div>
+            <div class="flow-wave">
+                <div class="flow-wave-fill" style="width: {{ occupied_slots|floatformat:0 }}%;">
+                    {{ occupied_slots }}% Occupancy Rate
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="chart-grid">
+            <!-- Revenue Chart -->
+            <div class="chart-card">
+                <h3>📈 Last 7 Days Revenue</h3>
+                <canvas id="revenueChart"></canvas>
+            </div>
+
+            <!-- Vehicle Type Distribution -->
+            <div class="chart-card">
+                <h3>🚗 Vehicle Type Distribution</h3>
+                <canvas id="vehicleChart"></canvas>
+            </div>
+
+            <!-- Hourly Bookings -->
+            <div class="chart-card">
+                <h3>⏰ Today's Hourly Bookings</h3>
+                <canvas id="hourlyChart"></canvas>
+            </div>
+
+            <!-- Monthly Revenue Trend -->
+            <div class="chart-card">
+                <h3>💰 6-Month Revenue Trend</h3>
+                <canvas id="monthlyRevenueChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Slot Status Pie Chart -->
+        <div class="chart-grid">
+            <div class="chart-card">
+                <h3>🅿️ Slot Status Distribution</h3>
+                <canvas id="slotStatusChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h3>🔥 Peak Hours (Last 7 Days)</h3>
+                <canvas id="peakHoursChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Location-wise Occupancy -->
+        <div class="section">
+            <div class="section-header">
+                <h2>📍 Location-wise Slot Status</h2>
+                <a href="/admin/parking/parkinglot/">Manage Locations</a>
+            </div>
+
+            <div class="location-grid">
+                {% for location in location_stats %}
+                <div class="location-card">
+                    <h3>🅿️ {{ location.name }}</h3>
+                    
+                    <div class="location-stats">
+                        <div class="location-stat available">
+                            <span class="value">{{ location.available }}</span>
+                            <span class="label">Available</span>
+                        </div>
+                        <div class="location-stat occupied">
+                            <span class="value">{{ location.occupied }}</span>
+                            <span class="label">Occupied</span>
+                        </div>
+                        <div class="location-stat total">
+                            <span class="value">{{ location.total }}</span>
+                            <span class="label">Total</span>
+                        </div>
+                    </div>
+
+                    <div class="occupancy-bar">
+                        <div class="occupancy-fill" style="width: {{ location.occupancy_rate }}%"></div>
+                    </div>
+                    <p style="text-align: center; margin-top: 8px; font-size: 13px; color: #64748b;">
+                        {{ location.occupancy_rate }}% Occupied
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Recent Sessions -->
+        <div class="section">
+            <div class="section-header">
+                <h2>📋 Recent Parking Sessions</h2>
+                <a href="/admin/parking/parkingsession/">View All Sessions</a>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Session ID</th>
+                            <th>Vehicle</th>
+                            <th>Slot</th>
+                            <th>Location</th>
+                            <th>Entry Time</th>
+                            <th>Exit Time</th>
+                            <th>Fee</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for session in recent_sessions %}
+                        <tr>
+                            <td><strong>PK-{{ session.id|stringformat:"05d" }}</strong></td>
+                            <td>🚗 {{ session.vehicle.license_plate }}</td>
+                            <td>{{ session.slot.slot_number }}</td>
+                            <td>{{ session.slot.parking_lot.name }}</td>
+                            <td>{{ session.entry_time|date:"d M Y, h:i A" }}</td>
+                            <td>
+                                {% if session.exit_time %}
+                                    {{ session.exit_time|date:"d M Y, h:i A" }}
+                                {% else %}
+                                    <span style="color: #f59e0b;">Active</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if session.fee %}
+                                    <strong style="color: var(--success);">₹{{ session.fee }}</strong>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if session.exit_time %}
+                                    <span class="badge completed">Completed</span>
+                                {% else %}
+                                    <span class="badge active">Active</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 30px; color: #64748b;">
+                                No parking sessions yet
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Chart.js Charts
+        const chartColors = {
+            primary: '#6366f1',
+            success: '#10b981',
+            warning: '#f59e0b',
+            danger: '#ef4444',
+            info: '#3b82f6'
+        };
+
+        // 1. Revenue Chart
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: {{ revenue_chart_data|safe }}.map(d => d.date),
+                datasets: [{
+                    label: 'Revenue (₹)',
+                    data: {{ revenue_chart_data|safe }}.map(d => d.revenue),
+                    borderColor: chartColors.success,
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // 2. Vehicle Type Chart
+        const vehicleCtx = document.getElementById('vehicleChart').getContext('2d');
+        const vehicleData = {{ vehicle_chart_data|safe }};
+        new Chart(vehicleCtx, {
+            type: 'doughnut',
+            data: {
+                labels: vehicleData.map(d => d.type.toUpperCase()),
+                datasets: [{
+                    data: vehicleData.map(d => d.count),
+                    backgroundColor: [
+                        chartColors.primary,
+                        chartColors.success,
+                        chartColors.warning,
+                        chartColors.danger
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true
+            }
+        });
+
+        // 3. Hourly Bookings Chart
+        const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+        new Chart(hourlyCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ hourly_bookings|safe }}.map(d => d.hour),
+                datasets: [{
+                    label: 'Bookings',
+                    data: {{ hourly_bookings|safe }}.map(d => d.bookings),
+                    backgroundColor: chartColors.info
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // 4. Monthly Revenue Chart
+        const monthlyRevenueCtx = document.getElementById('monthlyRevenueChart').getContext('2d');
+        new Chart(monthlyRevenueCtx, {
+            type: 'line',
+            data: {
+                labels: {{ monthly_revenue|safe }}.map(d => d.month),
+                datasets: [{
+                    label: 'Revenue (₹)',
+                    data: {{ monthly_revenue|safe }}.map(d => d.revenue),
+                    borderColor: chartColors.primary,
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // 5. Slot Status Chart
+        const slotStatusCtx = document.getElementById('slotStatusChart').getContext('2d');
+        const slotData = {{ slot_status_data|safe }};
+        new Chart(slotStatusCtx, {
+            type: 'pie',
+            data: {
+                labels: slotData.map(d => d.status),
+                datasets: [{
+                    data: slotData.map(d => d.count),
+                    backgroundColor: slotData.map(d => d.color)
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true
+            }
+        });
+
+        // 6. Peak Hours Chart
+        const peakHoursCtx = document.getElementById('peakHoursChart').getContext('2d');
+        new Chart(peakHoursCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ peak_hours_data|safe }}.map(d => d.hour),
+                datasets: [{
+                    label: 'Bookings',
+                    data: {{ peak_hours_data|safe }}.map(d => d.bookings),
+                    backgroundColor: chartColors.warning
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                indexAxis: 'y'
+            }
+        });
+    </script>
+</body>
+</html>

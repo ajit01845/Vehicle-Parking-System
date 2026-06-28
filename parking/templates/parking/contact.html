@@ -1,0 +1,776 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact & Support - Parkease</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 10px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            font-size: 32px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .logo-text h1 {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .logo-text .tagline {
+            font-size: 11px;
+            color: #64748b;
+        }
+        
+        .nav-center {
+            display: flex;
+            gap: 5px;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-center a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 600;
+            padding: 8px 15px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+
+        .nav-center a:hover, .nav-center a.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, var(--danger), #dc2626);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.95), rgba(139, 92, 246, 0.95)),
+                        url('https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=1920&q=80') center/cover;
+            color: white;
+            padding: 80px 20px 70px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: drift 20s linear infinite;
+        }
+
+        @keyframes drift {
+            from { transform: translate(0, 0); }
+            to { transform: translate(50px, 50px); }
+        }
+        
+        .hero h1 {
+            font-size: 42px;
+            margin-bottom: 15px;
+            font-weight: 800;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero .subtitle {
+            font-size: 18px;
+            margin-bottom: 35px;
+            opacity: 0.95;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+
+        .section {
+            padding: 60px 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 36px;
+            color: var(--dark);
+            margin-bottom: 12px;
+            font-weight: 800;
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 16px;
+            color: #64748b;
+            margin-bottom: 45px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+        }
+
+        /* Contact Cards Grid */
+        .contact-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 60px;
+        }
+
+        .contact-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .contact-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.2);
+        }
+
+        .contact-card .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .contact-card h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+
+        .contact-card p {
+            color: #64748b;
+            font-size: 15px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Vehicle Status Checker */
+        .vehicle-checker {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            max-width: 500px;
+            margin: 0 auto 60px;
+        }
+
+        .vehicle-checker h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 22px;
+        }
+
+        .vehicle-checker p {
+            color: #64748b;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+            font-family: inherit;
+            margin-bottom: 15px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        #vehicleResult {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .result-success {
+            background: #d4edda;
+            border-left: 4px solid var(--success);
+        }
+
+        .result-error {
+            background: #f8d7da;
+            border-left: 4px solid var(--danger);
+        }
+
+        .result-info {
+            background: #d1ecf1;
+            border-left: 4px solid var(--info);
+        }
+
+        /* Office Timings Box */
+        .timings-box {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .timings-box h3 {
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+
+        .timings-box .timing-item {
+            background: rgba(255,255,255,0.2);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        /* Two Column Layout */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        .form-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .required {
+            color: var(--danger);
+        }
+
+        textarea.form-control {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid var(--success);
+        }
+
+        /* Map Section */
+        .map-wrapper {
+            width: 100%;
+            height: 450px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            margin-bottom: 40px;
+        }
+
+        .map-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: white;
+            padding: 70px 0 35px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 35px;
+            border-top: 1px solid rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.8);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 32px; }
+            .nav-center { display: none; }
+            .two-column { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{% url 'home' %}" class="logo">
+                <div class="logo-icon">🚗</div>
+                <div class="logo-text">
+                    <h1>Parkease</h1>
+                    <p class="tagline">Pune Smart Parking Solutions</p>
+                </div>
+            </a>
+            
+            <ul class="nav-center">
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'park_vehicle' %}">Book Parking</a></li>
+                <li><a href="{% url 'monthly_pass' %}">Monthly Pass</a></li>
+                <li><a href="{% url 'user_profile' %}">My Bookings</a></li>
+                <li><a href="{% url 'contact' %}" class="active">Contact</a></li>
+            </ul>
+
+            <a href="{% url 'user_logout' %}" class="logout-btn">
+                🚪 Logout
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>📞 Contact & Support</h1>
+        <p class="subtitle">We're here to help you 24/7</p>
+    </section>
+
+    <!-- Quick Contact Cards -->
+    <section class="section" style="background: white;">
+        <div class="container">
+            <div class="contact-cards">
+                <div class="contact-card">
+                    <div class="icon">📍</div>
+                    <h3>Our Location</h3>
+                    <p>123 Main Street</p>
+                    <p>Pimpri, Maharashtra 411018</p>
+                    <a href="https://maps.google.com/?q=Pimpri,Maharashtra" target="_blank" class="btn btn-primary">
+                        🗺️ Open in Maps
+                    </a>
+                </div>
+
+                <div class="contact-card">
+                    <div class="icon">📧</div>
+                    <h3>Email Us</h3>
+                    <p>✉️ ajitilage@gmail.com</p>
+                    <p>Response within 2 hours</p>
+                    <a href="mailto:✉️ ajitilage@gmail.com" class="btn btn-primary">
+                        ✉️ Send Email
+                    </a>
+                </div>
+
+                <div class="contact-card">
+                    <div class="icon">📞</div>
+                    <h3>Call Us</h3>
+                    <p>+91 9359845632</p>
+                    <p>Available 24/7</p>
+                    <a href="tel:+919359845632" class="btn btn-primary">
+                        📱 Call Now
+                    </a>
+                </div>
+
+                <div class="contact-card">
+                    <div class="icon">💬</div>
+                    <h3>WhatsApp</h3>
+                    <p>+91 9359845632</p>
+                    <p>Instant Support</p>
+                    <a href="https://wa.me/919359845632?text=Hi!%20I%20need%20support%20regarding%20my%20parking." target="_blank" class="btn btn-primary" style="background: #25D366;">
+                        💬 Chat Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Vehicle Status Checker -->
+    <section class="section" style="background: var(--light);">
+        <div class="container">
+            <h2 class="section-title">🚗 Check Vehicle Status</h2>
+            <p class="section-subtitle">Enter your vehicle number to check parking status</p>
+            
+            <div class="vehicle-checker">
+                <h3>🔍 Vehicle Number</h3>
+                <p>Format: MH12AB1234 (Not case sensitive)</p>
+                
+                <input type="text" id="vehicleInput" class="form-control" 
+                       placeholder="Enter vehicle number" 
+                       maxlength="15"
+                       style="text-transform: uppercase;">
+                
+                <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="checkVehicleStatus()">
+                    🔍 Check Status
+                </button>
+                
+                <div id="vehicleResult"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Office Timings & Contact Form -->
+    <section class="section" style="background: white;">
+        <div class="container">
+            <h2 class="section-title">📧 Send Us a Message</h2>
+            <p class="section-subtitle">Fill out the form and we'll get back to you within 24 hours</p>
+
+            <div class="two-column">
+                <div class="form-container">
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-success">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label>Full Name <span class="required">*</span></label>
+                            <input type="text" name="full_name" class="form-control" placeholder="Enter your full name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Email Address <span class="required">*</span></label>
+                            <input type="email" name="email" class="form-control" placeholder="your@email.com" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Mobile Number (Optional)</label>
+                            <input type="tel" name="mobile_number" class="form-control" placeholder="+91 9359845632">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Subject <span class="required">*</span></label>
+                            <select name="subject" class="form-control" required>
+                                <option value="">-- Select Subject --</option>
+                                <option value="general">General Query</option>
+                                <option value="parking_issue">Parking Issue</option>
+                                <option value="payment">Payment Problem</option>
+                                <option value="monthly_pass">Monthly Pass</option>
+                                <option value="technical">Technical Support</option>
+                                <option value="complaint">Complaint</option>
+                                <option value="feedback">Feedback</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Message <span class="required">*</span></label>
+                            <textarea name="message" class="form-control" placeholder="Describe your issue..." required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-submit">
+                            ✉️ Send Message
+                        </button>
+                    </form>
+                </div>
+
+                <div>
+                    <!-- Office Timings -->
+                    <div class="timings-box">
+                        <h3>🕘 Support Hours</h3>
+                        <div class="timing-item">
+                            <strong>24/7 Emergency</strong>
+                        </div>
+                        <div class="timing-item">
+                            <strong>Normal Queries</strong><br>
+                            9:00 AM – 9:00 PM
+                        </div>
+                        <div class="timing-item">
+                            <strong>WhatsApp Support</strong><br>
+                            Available Now
+                        </div>
+                    </div>
+
+                    <!-- Live Support Info -->
+                    <div style="background: linear-gradient(135deg, var(--success), #059669); color: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);">
+                        <h3 style="font-size: 24px; margin-bottom: 20px;">🎧 Live Support</h3>
+                        
+                        <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                            <div style="font-size: 32px; margin-bottom: 10px;">💬</div>
+                            <h4 style="margin-bottom: 8px;">Live Chat</h4>
+                            <p style="opacity: 0.9; font-size: 14px;">Chat with our support team</p>
+                            <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: rgba(255,255,255,0.3); border-radius: 15px; font-size: 13px; margin-top: 10px;">
+                                <span style="width: 8px; height: 8px; background: white; border-radius: 50%; animation: pulse 2s infinite;"></span>
+                                Online Now
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                            <div style="font-size: 32px; margin-bottom: 10px;">⚡</div>
+                            <h4 style="margin-bottom: 8px;">Quick Response</h4>
+                            <p style="opacity: 0.9; font-size: 14px;">Typically replies within 5 minutes</p>
+                        </div>
+
+                        <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px;">
+                            <div style="font-size: 32px; margin-bottom: 10px;">📧</div>
+                            <h4 style="margin-bottom: 8px;">Email Support</h4>
+                            <p style="opacity: 0.9; font-size: 14px;">Response within 2 hours</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Section -->
+    <section class="section" style="background: var(--light);">
+        <div class="container">
+            <h2 class="section-title">📍 Find Us on Map</h2>
+            <p class="section-subtitle">Visit our office in Pimpri, Maharashtra</p>
+            
+            <div class="map-wrapper">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3782.121449469262!2d73.8041894!3d18.6297811!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2b9c8ffffffff%3A0x35d9c520e9d9b721!2sPimpri%2C%20Pune%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1234567890" allowfullscreen loading="lazy"></iframe>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>© 2025 Parkease - All Rights Reserved</p>
+                <p style="margin-top: 10px; opacity: 0.7;">Made with ❤️ for Smart Parking in Pune</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        async function checkVehicleStatus() {
+            const vehicleNumber = document.getElementById('vehicleInput').value.trim().toUpperCase();
+            const resultDiv = document.getElementById('vehicleResult');
+            
+            if (!vehicleNumber) {
+                resultDiv.innerHTML = '<strong style="color: var(--danger);">⚠️ Please enter a vehicle number</strong>';
+                resultDiv.className = 'result-error';
+                resultDiv.style.display = 'block';
+                return;
+            }
+            
+            // Basic format validation
+            if (vehicleNumber.length < 6) {
+                resultDiv.innerHTML = '<strong style="color: var(--danger);">❌ Invalid vehicle number format</strong>';
+                resultDiv.className = 'result-error';
+                resultDiv.style.display = 'block';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/vehicle-status/${vehicleNumber}/`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const vehicle = data.vehicle;
+                    
+                    if (vehicle.status === 'parked') {
+                        resultDiv.innerHTML = `
+                            <div style="text-align: center;">
+                                <div style="font-size: 48px; margin-bottom: 10px;">🅿️</div>
+                                <h4 style="color: var(--success); margin-bottom: 15px;">Status: Parked</h4>
+                                <div style="background: var(--light); padding: 12px; border-radius: 8px; margin-bottom: 10px;">
+                                    <strong>Slot:</strong> ${vehicle.slot_number}
+                                </div>
+                                <div style="background: var(--light); padding: 12px; border-radius: 8px; margin-bottom: 10px;">
+                                    <strong>Location:</strong> ${vehicle.location}
+                                </div>
+                                <div style="background: var(--light); padding: 12px; border-radius: 8px;">
+                                    <strong>Entry Time:</strong> ${vehicle.entry_time}
+                                </div>
+                            </div>
+                        `;
+                        resultDiv.className = 'result-success';
+                    } else if (vehicle.status === 'not_found') {
+                        resultDiv.innerHTML = `
+                            <div style="text-align: center;">
+                                <div style="font-size: 48px; margin-bottom: 10px;">❌</div>
+                                <h4 style="color: var(--danger); margin-bottom: 10px;">No Active Parking Found</h4>
+                                <p style="color: #64748b;">This vehicle is not currently parked in our system.</p>
+                            </div>
+                        `;
+                        resultDiv.className = 'result-info';
+                    }
+                    
+                    resultDiv.style.display = 'block';
+                } else {
+                    resultDiv.innerHTML = `<strong style="color: var(--danger);">❌ ${data.message}</strong>`;
+                    resultDiv.className = 'result-error';
+                    resultDiv.style.display = 'block';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<strong style="color: var(--danger);">❌ Error connecting to server</strong>';
+                resultDiv.className = 'result-error';
+                resultDiv.style.display = 'block';
+            }
+        }
+        
+        // Allow Enter key to trigger search
+        document.getElementById('vehicleInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkVehicleStatus();
+            }
+        });
+
+        // Pulse animation for online indicator
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

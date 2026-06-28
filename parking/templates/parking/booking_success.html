@@ -1,0 +1,645 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmed - Smart Parking System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #f0f0f0;
+            position: absolute;
+            animation: confetti-fall 3s linear infinite;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .success-card {
+            background: white;
+            border-radius: 25px;
+            padding: 3rem 2rem;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+            text-align: center;
+            animation: slideUp 0.6s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-icon {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #4caf50 0%, #8bc34a 100%);
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.3);
+            animation: scaleIn 0.5s ease-out 0.3s both;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0) rotate(-180deg);
+            }
+            to {
+                transform: scale(1) rotate(0);
+            }
+        }
+
+        .checkmark {
+            animation: checkmark 0.8s ease-out 0.5s both;
+        }
+
+        @keyframes checkmark {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.3);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            animation: fadeIn 0.6s ease-out 0.4s both;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            animation: fadeIn 0.6s ease-out 0.5s both;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .booking-details {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: left;
+            border-left: 5px solid #4caf50;
+            animation: fadeIn 0.6s ease-out 0.6s both;
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .booking-id {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.5rem 1.2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .status-badge {
+            background: linear-gradient(135deg, #4caf50 0%, #8bc34a 100%);
+            color: white;
+            padding: 0.5rem 1.2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .detail-label {
+            color: #666;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .detail-value {
+            color: #333;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .amount-section {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-top: 1.5rem;
+            border-left: 5px solid #ff9800;
+        }
+
+        .amount-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+            font-size: 1rem;
+        }
+
+        .amount-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ff9800;
+            padding-top: 1rem;
+            border-top: 2px solid #ff9800;
+            margin-top: 0.5rem;
+        }
+
+        .qr-code-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-top: 2rem;
+            border: 3px dashed #667eea;
+            animation: fadeIn 0.6s ease-out 0.8s both;
+        }
+
+        .qr-code-section h3 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            background: white;
+            margin: 1rem auto;
+            border: 5px solid #667eea;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+
+        .instructions {
+            background: #e3f2fd;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-top: 2rem;
+            border-left: 5px solid #2196f3;
+            animation: fadeIn 0.6s ease-out 0.9s both;
+        }
+
+        .instructions h3 {
+            color: #1976d2;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .instructions ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .instructions li {
+            color: #555;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #bbdefb;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 0.95rem;
+        }
+
+        .instructions li:last-child {
+            border-bottom: none;
+        }
+
+        .instructions li::before {
+            content: '✓';
+            background: #4caf50;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+            animation: fadeIn 0.6s ease-out 1s both;
+        }
+
+        .btn {
+            padding: 1.2rem 2rem;
+            border: none;
+            border-radius: 15px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #f5f5ff;
+            transform: translateY(-3px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4caf50 0%, #8bc34a 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(76, 175, 80, 0.4);
+        }
+
+        .support-section {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-top: 2rem;
+            text-align: center;
+            animation: fadeIn 0.6s ease-out 1.1s both;
+        }
+
+        .support-section h4 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .support-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .support-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .support-link:hover {
+            color: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .payment-success-icon {
+            display: inline-block;
+            animation: bounce 1s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .timer-section {
+            background: #fff3cd;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            border-left: 4px solid #ffc107;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: #856404;
+        }
+
+        @media (max-width: 768px) {
+            .success-card {
+                padding: 2rem 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .qr-code {
+                width: 180px;
+                height: 180px;
+            }
+
+            .detail-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+            }
+
+            .action-buttons,
+            .support-section {
+                display: none;
+            }
+
+            .success-card {
+                box-shadow: none;
+                border: 2px solid #ddd;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Confetti Effect -->
+    <script>
+        // Create confetti
+        for (let i = 0; i < 50; i++) {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.backgroundColor = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7', '#a29bfe'][Math.floor(Math.random() * 6)];
+            confetti.style.animationDelay = Math.random() * 3 + 's';
+            confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            document.body.appendChild(confetti);
+        }
+    </script>
+
+    <div class="container">
+        <div class="success-card">
+            <!-- Success Icon -->
+            <div class="success-icon">
+                <span class="checkmark">✓</span>
+            </div>
+
+            <!-- Success Message -->
+            <h1>🎉 Booking Confirmed!</h1>
+            <p class="subtitle">Your parking slot has been successfully booked</p>
+
+            <!-- Booking Details -->
+            <div class="booking-details">
+                <div class="detail-header">
+                    <span class="booking-id">🎫 Booking ID: #PK-{{ booking.id }}</span>
+                    <span class="status-badge">
+                        <span class="payment-success-icon">✓</span>
+                        Payment Successful
+                    </span>
+                </div>
+
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">🚗 Vehicle Number</span>
+                        <span class="detail-value">{{ booking.vehicle.license_plate }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">🚙 Vehicle Type</span>
+                        <span class="detail-value">{{ booking.vehicle.get_vehicle_type_display }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">📍 Parking Lot</span>
+                        <span class="detail-value">{{ booking.slot.parking_lot.name }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">🅿️ Slot Number</span>
+                        <span class="detail-value">{{ booking.slot.slot_number }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">🕐 Entry Time</span>
+                        <span class="detail-value">{{ booking.entry_time|date:"d M Y, h:i A" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">⏰ Duration</span>
+                        <span class="detail-value">{{ booking.duration_hours }} hour(s)</span>
+                    </div>
+                </div>
+
+                <!-- Amount Section -->
+                <div class="amount-section">
+                    <div class="amount-row">
+                        <span>Base Amount:</span>
+                        <span>₹{{ booking.base_amount }}</span>
+                    </div>
+                    <div class="amount-row">
+                        <span>GST (18%):</span>
+                        <span>₹{{ booking.gst_amount }}</span>
+                    </div>
+                    <div class="amount-total">
+                        <span>Paid Amount:</span>
+                        <span>₹{{ booking.total_amount }}</span>
+                    </div>
+                </div>
+
+                <!-- Timer Section -->
+                <div class="timer-section">
+                    <span>⏰</span>
+                    <span>Your slot is reserved until: {{ booking.exit_time|date:"d M Y, h:i A" }}</span>
+                </div>
+            </div>
+
+            <!-- QR Code Section -->
+            <div class="qr-code-section">
+                <h3>📱 Entry QR Code</h3>
+                <p style="color: #666; margin-bottom: 1rem;">Show this QR code at parking entrance</p>
+                <div class="qr-code">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PK-{{ booking.id }}" 
+                         alt="Entry QR Code" 
+                         style="width: 100%; height: 100%; object-fit: contain;">
+                </div>
+                <p style="color: #666; font-size: 0.9rem; margin-top: 1rem;">
+                    💡 Save this QR code for quick entry
+                </p>
+            </div>
+
+            <!-- Instructions -->
+            <div class="instructions">
+                <h3>📋 What's Next?</h3>
+                <ul>
+                    <li>A confirmation email has been sent to your registered email</li>
+                    <li>SMS with booking details sent to your mobile number</li>
+                    <li>Show the QR code at parking entrance for quick entry</li>
+                    <li>Your slot is reserved for {{ booking.duration_hours }} hour(s)</li>
+                    <li>Exit before {{ booking.exit_time|date:"h:i A" }} to avoid extra charges</li>
+                </ul>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="{% url 'home' %}" class="btn btn-primary">
+                    🏠 Go to Home
+                </a>
+                <a href="{% url 'user_profile' %}" class="btn btn-secondary">
+                    📋 View All Bookings
+                </a>
+                <button onclick="window.print()" class="btn btn-success">
+                    🖨️ Print Receipt
+                </button>
+            </div>
+
+            <!-- Support Section -->
+            <div class="support-section">
+                <h4>Need Help?</h4>
+                <div class="support-links">
+                    <a href="tel:+919359845632" class="support-link">
+                        <span>📞</span>
+                        <span>Call Support</span>
+                    </a>
+                    <a href="mailto:support@parkease.com" class="support-link">
+                        <span>📧</span>
+                        <span>Email Us</span>
+                    </a>
+                    <a href="#" class="support-link">
+                        <span>💬</span>
+                        <span>Live Chat</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Footer Note -->
+            <p style="color: #999; font-size: 0.85rem; margin-top: 2rem; line-height: 1.6;">
+                Thank you for choosingVihicle Parking System We hope you have a great parking experience. 
+                <br>For any queries, contact us 24/7.
+            </p>
+        </div>
+    </div>
+
+    <script>
+     
+        // Prevent back button after successful payment
+        history.pushState(null, null, location.href);
+        window.onpopstate = function () {
+            history.go(1);
+        };
+
+    </script>
+</body>
+</html>

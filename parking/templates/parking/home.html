@@ -1,0 +1,1286 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parkease - Pune Smart Parking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        /* Navbar - Glassmorphism */
+        .navbar {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 10px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            font-size: 32px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .logo-text h1 {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .logo-text .tagline {
+            font-size: 11px;
+            color: #64748b;
+        }
+        
+        .nav-center {
+            display: flex;
+            gap: 5px;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-center a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 600;
+            padding: 8px 15px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+
+        .nav-center a:hover, .nav-center a.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Notification Icon */
+        .notification-icon {
+            position: relative;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px 12px;
+            transition: all 0.3s;
+        }
+
+        .notification-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 4px;
+            right: 8px;
+            background: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .btn-quick-book {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+            transition: all 0.3s;
+        }
+
+        .btn-quick-book:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Logout Button - RED */
+        .logout-btn {
+            background: linear-gradient(135deg, var(--danger), #dc2626);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
+        }
+
+        /* Hero Section - Modern Gradient */
+        .hero {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.95), rgba(139, 92, 246, 0.95)),
+                        url('https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=1920&q=80') center/cover;
+            color: white;
+            padding: 80px 20px 70px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: drift 20s linear infinite;
+        }
+
+        @keyframes drift {
+            from { transform: translate(0, 0); }
+            to { transform: translate(50px, 50px); }
+        }
+        
+        .hero h1 {
+            font-size: 42px;
+            margin-bottom: 15px;
+            font-weight: 800;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero .subtitle {
+            font-size: 18px;
+            margin-bottom: 35px;
+            opacity: 0.95;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: white;
+            color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            color: var(--primary);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+
+        .section {
+            padding: 60px 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 36px;
+            color: var(--dark);
+            margin-bottom: 12px;
+            font-weight: 800;
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 16px;
+            color: #64748b;
+            margin-bottom: 45px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+        }
+
+        /* Stats Overview */
+        .stats-section {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 45px 0;
+            margin-top: -40px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-card h3 {
+            font-size: 40px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .stat-card p {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+
+        /* Parking Lots Grid - DYNAMIC FROM ADMIN */
+        .parking-lots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .lot-button {
+            text-decoration: none;
+            display: block;
+        }
+
+        .lot-card {
+            padding: 30px 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            color: white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lot-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .lot-card:hover::before {
+            opacity: 1;
+        }
+
+        .lot-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+        }
+
+        .lot-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+
+        .lot-card h3 {
+            font-size: 19px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .lot-card p {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+
+        /* Locations Grid with Images */
+        .locations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .location-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .location-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.2);
+        }
+
+        .location-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+        }
+
+        .location-content {
+            padding: 25px;
+        }
+
+        .location-card .icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .location-card h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+
+        .location-stats {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+            padding: 12px;
+            background: var(--light);
+            border-radius: 8px;
+        }
+
+        .stat-item {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .stat-item.available {
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        .location-landmarks {
+            margin: 15px 0;
+        }
+
+        .landmarks-title {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .landmark-tags {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .landmark-tag {
+            padding: 4px 10px;
+            background: var(--light);
+            border-radius: 15px;
+            font-size: 11px;
+            color: #475569;
+            font-weight: 500;
+        }
+
+        .btn-view-details {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+
+        .btn-view-details:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+        }
+
+        .feature-card .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .feature-card h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: var(--dark);
+            font-weight: 700;
+        }
+
+        .feature-card p {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Services Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+        }
+
+        .service-card {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .service-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+        }
+
+        .service-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .service-card h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: var(--dark);
+            font-weight: 700;
+        }
+
+        .service-card p {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Pricing Grid - REMOVED DUPLICATE SECTION */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+        }
+
+        .pricing-card {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .pricing-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+        }
+
+        .pricing-card .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .pricing-card h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .pricing-card .price {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 15px 0;
+        }
+
+        .pricing-card .duration {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        /* Monthly Pass Feature Banner */
+        .pass-banner {
+            background: linear-gradient(135deg, var(--warning), #f59e0b);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+            margin: 40px auto;
+            max-width: 900px;
+            box-shadow: 0 10px 40px rgba(245, 158, 11, 0.3);
+        }
+
+        .pass-banner h3 {
+            font-size: 28px;
+            margin-bottom: 12px;
+            font-weight: 800;
+        }
+
+        .pass-banner p {
+            font-size: 16px;
+            margin-bottom: 25px;
+            opacity: 0.95;
+        }
+
+        .pass-banner .btn {
+            background: white;
+            color: var(--warning);
+            padding: 14px 35px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .pass-banner .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Contact Section */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+        }
+
+        .contact-card {
+            background: white;
+            padding: 28px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .contact-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .contact-card .icon {
+            font-size: 44px;
+            margin-bottom: 15px;
+        }
+
+        .contact-card h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .contact-card a {
+            color: var(--dark);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .contact-card a:hover {
+            color: var(--primary);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .empty-state .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 24px;
+            color: var(--dark);
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            color: #64748b;
+            font-size: 16px;
+            margin-bottom: 25px;
+        }
+
+        .empty-state .btn {
+            display: inline-block;
+        }
+
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: white;
+            padding: 70px 0 35px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 45px;
+            margin-bottom: 45px;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 25px;
+            font-size: 22px;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 14px;
+        }
+
+        .footer-links a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 15px;
+        }
+
+        .footer-links a:hover {
+            color: white;
+            padding-left: 8px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 35px;
+            border-top: 1px solid rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.8);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .social-link {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .social-link:hover {
+            background: var(--primary);
+            transform: translateY(-5px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .hero .subtitle {
+                font-size: 15px;
+            }
+
+            .section-title {
+                font-size: 28px;
+            }
+
+            .nav-center {
+                display: none;
+            }
+
+            .locations-grid,
+            .parking-lots-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{% url 'home' %}" class="logo">
+                <div class="logo-icon">🚗</div>
+                <div class="logo-text">
+                    <h1>Parkease</h1>
+                    <p class="tagline">Pune Smart Parking Solutions</p>
+                </div>
+            </a>
+            
+            <ul class="nav-center">
+                <li><a href="{% url 'home' %}" class="active">Home</a></li>
+                <li><a href="{% url 'park_vehicle' %}">Book Parking</a></li>
+                <li><a href="{% url 'monthly_pass' %}">Monthly Pass</a></li>
+                <li><a href="{% url 'user_profile' %}">My Bookings</a></li>
+                <li><a href="{% url 'contact' %}">Contact</a></li>
+                
+                <!-- Notification Icon -->
+                <li>
+    <a href="{% url 'notifications' %}">
+        🔔
+        {% if unread_count > 0 %}
+        <span style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; margin-left: 5px;">
+            {{ unread_count }}
+        </span>
+        {% endif %}
+    </a>
+</li>
+            </ul>
+
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <a href="{% url 'park_vehicle' %}" class="btn-quick-book">
+                    🅿️ Book Now
+                </a>
+                <a href="{% url 'user_logout' %}" class="logout-btn">
+                    🚪 Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Find the Nearest Parking Slot in Pune</h1>
+        <p class="subtitle">Real-time availability across {{ parking_lots.count }} locations</p>
+        <div class="hero-buttons">
+            <a href="{% url 'park_vehicle' %}" class="btn btn-primary">
+                🔍 Find Parking
+            </a>
+            <a href="#locations" class="btn btn-secondary">
+                📍 View Locations
+            </a>
+        </div>
+    </section>
+
+    <!-- Quick Stats Overview -->
+    <section class="stats-section">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>{{ available_slots }}</h3>
+                <p>🟢 Available Slots</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ parking_lots.count }}</h3>
+                <p>📍 Parking Locations</p>
+            </div>
+            <div class="stat-card">
+                <h3>24/7</h3>
+                <p>🕐 Open Always</p>
+            </div>
+            <div class="stat-card">
+                <h3>100%</h3>
+                <p>🔒 Secure Parking</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Available Parking Lots -->
+    <section class="section" style="background: white;">
+        <div class="container">
+            <h2 class="section-title">📍 Available Parking Lots</h2>
+            <p class="section-subtitle">All locations managed by admin - Real-time slot availability</p>
+            
+            {% if parking_lots %}
+            <div class="parking-lots-grid">
+                {% for lot in parking_lots %}
+                <a href="{% url 'park_vehicle' %}?location={{ lot.name|urlencode }}" class="lot-button">
+                    <div class="lot-card" style="background: linear-gradient(135deg, 
+                        {% cycle '#6366f1, #8b5cf6' '#10b981, #059669' '#f59e0b, #d97706' '#ef4444, #dc2626' '#3b82f6, #2563eb' '#8b5cf6, #7c3aed' %});">
+                        <div class="lot-icon">🅿️</div>
+                        <h3>{{ lot.name }}</h3>
+                        <p>{{ lot.available_count }} / {{ lot.total_slots }} slots</p>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="icon">🅿️</div>
+                <h3>No Parking Locations Available</h3>
+                <p>Admin hasn't added any parking locations yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Monthly Pass Feature Banner -->
+    <section class="section" style="background: var(--light);">
+        <div class="container">
+            <div class="pass-banner">
+                <h3>🎫 Get Monthly Parking Pass</h3>
+                <p>Unlimited parking access, priority slots, and save up to 60% on parking fees!</p>
+                <a href="{% url 'monthly_pass' %}" class="btn">
+                    View Pass Plans →
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us -->
+    <section class="section" style="background: white;">
+        <div class="container">
+            <h2 class="section-title">✨ Why Choose Us?</h2>
+            <p class="section-subtitle">Premium parking experience with modern amenities</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="icon">🔴</div>
+                    <h3>Real-time Slot Tracking</h3>
+                    <p>Live slot status updates across all Pune parking locations</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="icon">📍</div>
+                    <h3>Pune-based Smart Parking</h3>
+                    <p>Strategic locations covering major Pune areas</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="icon">🔒</div>
+                    <h3>Safe & Secure with CCTV</h3>
+                    <p>24/7 surveillance with trained security guards</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="icon">⚡</div>
+                    <h3>Easy Online Booking</h3>
+                    <p>Book your slot in seconds with our fast system</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="icon">💳</div>
+                    <h3>Digital Payments</h3>
+                    <p>UPI, Card, Net Banking & Cash options available</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="icon">🏢</div>
+                    <h3>Multi-floor Parking</h3>
+                    <p>Spacious multi-level parking facilities</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="icon">⚡</div>
+                    <h3>EV Charging Available</h3>
+                    <p>Electric vehicle charging stations at select locations</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="icon">🎫</div>
+                    <h3>Monthly & Hourly Plans</h3>
+                    <p>Flexible pricing for daily users and subscribers</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Our Services -->
+    <section class="section" style="background: var(--light);">
+        <div class="container">
+            <h2 class="section-title">🛠️ Our Services</h2>
+            <p class="section-subtitle">Comprehensive parking solutions for all your needs</p>
+
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">📱</div>
+                    <h3>Online Slot Booking</h3>
+                    <p>Reserve your parking spot before you arrive</p>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-icon">🟢</div>
+                    <h3>Live Slot Availability</h3>
+                    <p>Check real-time slot status across all locations</p>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-icon">🏢</div>
+                    <h3>Multi-floor Parking</h3>
+                    <p>Spacious parking across multiple floors</p>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-icon">🚗</div>
+                    <h3>2W / 3W / 4W Parking</h3>
+                    <p>Dedicated spaces for all vehicle types</p>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-icon">⚡</div>
+                    <h3>EV Charging Points</h3>
+                    <p>Charge your electric vehicle while parked</p>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-icon">🎫</div>
+                    <h3>Monthly Subscription Plans</h3>
+                    <p>Save more with our monthly parking passes</p>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-icon">🧾</div>
+                    <h3>Digital Receipts</h3>
+                    <p>Get instant receipts via email and SMS</p>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-icon">🔔</div>
+                    <h3>Real-time Notifications</h3>
+                    <p>Stay updated with booking confirmations</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Parking Locations Details with Images -->
+    <section class="section" style="background: white;" id="locations">
+        <div class="container">
+            <h2 class="section-title">🅿️ Parking Locations in Pune</h2>
+            <p class="section-subtitle">Real-time availability with nearby landmarks</p>
+
+            {% if parking_lots %}
+            <div class="locations-grid">
+                {% for lot in parking_lots %}
+                <div class="location-card">
+                    {% if lot.image %}
+                    <img src="{{ lot.image.url }}" alt="{{ lot.name }}" class="location-image">
+                    {% else %}
+                    <img src="https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=400&h=200&fit=crop" alt="{{ lot.name }}" class="location-image">
+                    {% endif %}
+                    
+                    <div class="location-content">
+                        <div class="icon">🅿️</div>
+                        <h3>{{ lot.name }}</h3>
+                        
+                        <div class="location-stats">
+                            <span class="stat-item available">
+                                🟢 {{ lot.available_count }} Available
+                            </span>
+                            <span class="stat-item">
+                                🅿️ {{ lot.total_slots }} Total
+                            </span>
+                        </div>
+                        
+                        {% if lot.landmarks.all %}
+                        <div class="location-landmarks">
+                            <p class="landmarks-title">📍 Nearby:</p>
+                            <div class="landmark-tags">
+                                {% for landmark in lot.landmarks.all|slice:":3" %}
+                                <span class="landmark-tag">{{ landmark.name }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <a href="{% url 'park_vehicle' %}?location={{ lot.name|urlencode }}" class="btn-view-details">
+                            View Details & Book
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="icon">🅿️</div>
+                <h3>No Parking Locations Available</h3>
+                <p>Admin hasn't added any parking locations yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Pricing Section - Admin Configured -->
+    <section class="section" style="background: var(--light);">
+        <div class="container">
+            <h2 class="section-title">💰 Parking Rates</h2>
+            <p class="section-subtitle">Transparent pricing for all vehicle types</p>
+
+            {% if pricing_rules %}
+            <div class="pricing-grid">
+                {% for rule in pricing_rules %}
+                <div class="pricing-card">
+                    <div class="icon">
+                        {% if rule.vehicle_type == 'car' %}🚗
+                        {% elif rule.vehicle_type == 'bike' %}🏍️
+                        {% elif rule.vehicle_type == 'ev' %}⚡
+                        {% elif rule.vehicle_type == '3w' %}🛺
+                        {% else %}🚗{% endif %}
+                    </div>
+                    <h3>{{ rule.get_vehicle_type_display }}</h3>
+                    <div class="price">₹{{ rule.rate_per_hour }}</div>
+                    <p class="duration">Per Hour</p>
+                    {% if rule.daily_max %}
+                    <p style="font-size: 13px; color: #64748b; margin-top: 10px; font-weight: 600;">
+                        Daily Max: ₹{{ rule.daily_max }}
+                    </p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="icon">🏍️</div>
+                    <h3>2 Wheeler</h3>
+                    <div class="price">₹10</div>
+                    <p class="duration">Per Hour</p>
+                </div>
+                <div class="pricing-card">
+                    <div class="icon">🚗</div>
+                    <h3>4 Wheeler</h3>
+                    <div class="price">₹20</div>
+                    <p class="duration">Per Hour</p>
+                </div>
+                <div class="pricing-card">
+                    <div class="icon">⚡</div>
+                    <h3>Electric Vehicle</h3>
+                    <div class="price">₹15</div>
+                    <p class="duration">Per Hour</p>
+                </div>
+                <div class="pricing-card">
+                    <div class="icon">🛺</div>
+                    <h3>3 Wheeler</h3>
+                    <div class="price">₹12</div>
+                    <p class="duration">Per Hour</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Contact & Support -->
+    <section class="section" style="background: white;">
+        <div class="container">
+            <h2 class="section-title">📞 Contact & Support</h2>
+            <p class="section-subtitle">Need help? We're here for you 24/7</p>
+
+            <div class="contact-grid">
+                <div class="contact-card">
+                    <div class="icon">📧</div>
+                    <h3>Email Support</h3>
+                    <a href="mailto:support@puneparking.com">✉️ ajitilage@gmail.com</a>
+                </div>
+
+                <div class="contact-card">
+                    <div class="icon">📞</div>
+                    <h3>Phone Number</h3>
+                    <a href="tel:+919359845632">+91 9359845632</a>
+                </div>
+
+                <div class="contact-card">
+                    <div class="icon">💬</div>
+                    <h3>WhatsApp Link</h3>
+                    <a href="https://wa.me/919359845632" target="_blank">Chat on WhatsApp</a>
+                </div>
+
+                <div class="contact-card">
+                    <div class="icon">📍</div>
+                    <h3>Address</h3>
+                    <p style="color: var(--dark); font-weight: 600;">Pune Parking Office<br>Pimpri, Pune, Maharashtra</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h3>🚗 Parkease</h3>
+                    <p>Pune's most trusted smart parking solution. Real-time availability, secure payments, and 24/7 support.</p>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="{% url 'home' %}">Home</a></li>
+                        <li><a href="{% url 'park_vehicle' %}">Available Parking Lots</a></li>
+                        <li><a href="{% url 'monthly_pass' %}">Monthly Pass</a></li>
+                        <li><a href="{% url 'user_profile' %}">My Bookings</a></li>
+                        <li><a href="{% url 'contact' %}">Contact & Support</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Parking Zones</h3>
+                    <ul class="footer-links">
+                        {% for lot in parking_lots|slice:":6" %}
+                        <li><a href="{% url 'park_vehicle' %}?location={{ lot.name|urlencode }}">{{ lot.name }}</a></li>
+                        {% empty %}
+                        <li><a href="#">No locations available</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Admin & Support</h3>
+                    <ul class="footer-links">
+                        {% if user.is_staff %}
+                        <li><a href="/admin">Admin Panel</a></li>
+                        <li><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                        {% else %}
+                        <li><a href="/admin">Admin Login</a></li>
+                        {% endif %}
+                        <li><a href="{% url 'user_login' %}">User Login</a></li>
+                        <li><a href="{% url 'register' %}">Register</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 Parkease -  All Rights Reserved.</p>
+                <p>Made with for Smart Parking in Pune</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

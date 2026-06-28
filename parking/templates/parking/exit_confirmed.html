@@ -1,0 +1,771 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exit Confirmed - ParkEase</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-header {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .success-header::before {
+            content: '🎉';
+            position: absolute;
+            font-size: 15rem;
+            opacity: 0.1;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .success-icon {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 4rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: scaleUp 0.5s ease-out 0.3s both;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes scaleUp {
+            from {
+                transform: scale(0) rotate(-180deg);
+            }
+            to {
+                transform: scale(1) rotate(0);
+            }
+        }
+
+        .success-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+            animation: fadeIn 0.5s ease-out 0.5s both;
+        }
+
+        .success-header p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+            animation: fadeIn 0.5s ease-out 0.7s both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .gate-animation {
+            width: 300px;
+            height: 200px;
+            margin: 2rem auto;
+            position: relative;
+        }
+
+        .gate {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f0f0f0 0%, #d0d0d0 100%);
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .gate-left,
+        .gate-right {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(135deg, #333 0%, #555 100%);
+            top: 0;
+            transition: all 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .gate-left {
+            left: 0;
+            border-right: 4px solid #ff9800;
+            transform-origin: left;
+        }
+
+        .gate-right {
+            right: 0;
+            border-left: 4px solid #ff9800;
+            transform-origin: right;
+        }
+
+        .gate.open .gate-left {
+            transform: translateX(-100%) rotateY(45deg);
+        }
+
+        .gate.open .gate-right {
+            transform: translateX(100%) rotateY(-45deg);
+        }
+
+        .car-icon {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3rem;
+            z-index: 10;
+            animation: driveOut 2s ease-in-out 1.5s forwards;
+        }
+
+        @keyframes driveOut {
+            0% {
+                transform: translateX(-50%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(200%) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .content {
+            padding: 2.5rem;
+        }
+
+        .booking-details {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-left: 5px solid #4caf50;
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #dee2e6;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .booking-id {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .payment-badge {
+            background: #4caf50;
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border-radius: 25px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .detail-item {
+            background: white;
+            padding: 1.2rem;
+            border-radius: 12px;
+            transition: all 0.3s;
+            border: 2px solid #e0e0e0;
+        }
+
+        .detail-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .detail-item label {
+            display: block;
+            color: #666;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-item .value {
+            color: #333;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .detail-item .icon {
+            margin-right: 0.5rem;
+        }
+
+        .payment-summary {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-left: 5px solid #4caf50;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+
+        .payment-summary h3 {
+            color: #2e7d32;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.3rem;
+        }
+
+        .payment-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(46, 125, 50, 0.2);
+            font-size: 1rem;
+        }
+
+        .payment-row:last-child {
+            border-bottom: none;
+        }
+
+        .payment-row.total {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #2e7d32;
+            border-top: 3px solid #4caf50;
+            padding-top: 1rem;
+            margin-top: 0.5rem;
+            background: white;
+            border-radius: 10px;
+            padding: 1.2rem;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            grid-column: span 2;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(108, 117, 125, 0.3);
+        }
+
+        .btn-print {
+            background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+            color: white;
+        }
+
+        .btn-print:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(33, 150, 243, 0.3);
+        }
+
+        .help-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .help-section h3 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+        }
+
+        .help-options {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .help-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s;
+            min-width: 120px;
+        }
+
+        .help-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .help-btn .icon {
+            font-size: 2rem;
+        }
+
+        .help-btn .label {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .thank-you {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-radius: 12px;
+            border: 2px solid #ff9800;
+        }
+
+        .thank-you h4 {
+            color: #e65100;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .thank-you p {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        @media (max-width: 768px) {
+            .success-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-primary {
+                grid-column: span 1;
+            }
+
+            .help-options {
+                flex-direction: column;
+            }
+
+            .detail-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .gate-animation {
+                width: 250px;
+                height: 150px;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .actions-grid,
+            .help-section,
+            .btn {
+                display: none !important;
+            }
+
+            .container {
+                box-shadow: none;
+            }
+
+            .gate-animation {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Success Header -->
+        <div class="success-header">
+            <div class="success-icon">✅</div>
+            <h1>Exiting Confirmed!</h1>
+            <p>Your parking session has ended successfully</p>
+        </div>
+
+        <!-- Gate Animation -->
+        <div class="gate-animation">
+            <div class="gate open" id="gateAnimation">
+                <div class="gate-left"></div>
+                <div class="gate-right"></div>
+                <div class="car-icon">🚗</div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Booking Details -->
+            <div class="booking-details">
+                <div class="detail-header">
+                    <div class="booking-id">
+                        🎫 Booking ID: #PK-{{ booking.id }}
+                    </div>
+                    <div class="payment-badge">
+                        <span>✓</span>
+                        <span>Payment Successful</span>
+                    </div>
+                </div>
+
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <label><span class="icon">🚗</span> Vehicle Number</label>
+                        <div class="value">{{ booking.vehicle.license_plate }}</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <label><span class="icon">🚙</span> Vehicle Type</label>
+                        <div class="value">{{ booking.vehicle.get_vehicle_type_display }}</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <label><span class="icon">📍</span> Parking Lot</label>
+                        <div class="value">{{ booking.slot.parking_lot.name }}</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <label><span class="icon">🅿️</span> Slot Number</label>
+                        <div class="value">{{ booking.slot.slot_number }}</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <label><span class="icon">🕐</span> Entry Time</label>
+                        <div class="value">{{ booking.entry_time|date:"d M Y, h:i A" }}</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <label><span class="icon">🕐</span> Exit Time</label>
+                        <div class="value">{{ booking.exit_time|date:"d M Y, h:i A" }}</div>
+                    </div>
+
+                    <div class="detail-item" style="grid-column: span 2;">
+                        <label><span class="icon">⏰</span> Total Duration</label>
+                        <div class="value">{{ exit_details.total_duration }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Summary -->
+            <div class="payment-summary">
+                <h3>💰 Payment Summary</h3>
+                <div class="payment-row">
+                    <span>Base Amount:</span>
+                    <span>₹{{ base_amount }}</span>
+                </div>
+                {% if extra_amount %}
+                <div class="payment-row">
+                    <span>Extra Time Charges:</span>
+                    <span>₹{{ extra_amount }}</span>
+                </div>
+                {% endif %}
+                <div class="payment-row">
+                    <span>GST (18%):</span>
+                    <span>₹{{ gst_amount }}</span>
+                </div>
+                <div class="payment-row total">
+                    <span>Paid Amount:</span>
+                    <span>₹{{ exit_details.total_paid }}</span>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="actions-grid">
+                <a href="{% url 'home' %}" class="btn btn-primary">
+                    <span>🏠</span>
+                    <span>Go to Home</span>
+                </a>
+                <a href="{% url 'user_profile' %}" class="btn btn-secondary">
+                    <span>📋</span>
+                    <span>View All Bookings</span>
+                </a>
+                <button onclick="window.print()" class="btn btn-print">
+                    <span>🖨️</span>
+                    <span>Print Receipt</span>
+                </button>
+            </div>
+
+            <!-- Help Section -->
+            <div class="help-section">
+                <h3>Need Help?</h3>
+                <div class="help-options">
+                    <a href="tel:+919359845632" class="help-btn">
+                        <span class="icon">📞</span>
+                        <span class="label">Call Support</span>
+                    </a>
+                    <a href="mailto:✉️ ajitilage@gmail.com" class="help-btn">
+                        <span class="icon">📧</span>
+                        <span class="label">Email Us</span>
+                    </a>
+                    <a href="https://wa.me/919359845632" class="help-btn" target="_blank">
+                        <span class="icon">💬</span>
+                        <span class="label">Live Chat</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Thank You Message -->
+            <div class="thank-you">
+                <h4>Thank you for choosingVihicle Parking System</h4>
+                <p>We hope you have a great parking experience. For any queries, contact us 24/7.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Confetti effect
+        function createConfetti() {
+            const colors = ['#667eea', '#764ba2', '#4caf50', '#ff9800', '#2196f3', '#e91e63'];
+            const confettiCount = 60;
+            
+            for (let i = 0; i < confettiCount; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.top = '-10px';
+                    confetti.style.animationDuration = (2 + Math.random() * 3) + 's';
+                    
+                    document.body.appendChild(confetti);
+                    
+                    const animation = confetti.animate([
+                        { 
+                            transform: 'translateY(0) rotate(0deg)', 
+                            opacity: 1 
+                        },
+                        { 
+                            transform: `translateY(${window.innerHeight + 50}px) rotate(${Math.random() * 720}deg)`, 
+                            opacity: 0 
+                        }
+                    ], {
+                        duration: 3000 + Math.random() * 2000,
+                        easing: 'cubic-bezier(.25, .46, .45, .94)'
+                    });
+                    
+                    animation.onfinish = () => confetti.remove();
+                }, i * 40);
+            }
+        }
+
+        // Success sound
+        function playSuccessSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                // First note (C)
+                oscillator.frequency.value = 523.25;
+                oscillator.type = 'sine';
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                
+                oscillator.start(audioContext.currentTime);
+                
+                // Second note (E)
+                setTimeout(() => {
+                    oscillator.frequency.value = 659.25;
+                }, 200);
+                
+                // Third note (G)
+                setTimeout(() => {
+                    oscillator.frequency.value = 783.99;
+                }, 400);
+                
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
+                oscillator.stop(audioContext.currentTime + 0.8);
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+        }
+
+        // Browser notification
+        function showNotification() {
+            if ('Notification' in window) {
+                if (Notification.permission === 'granted') {
+                    new Notification('Exit Confirmed! 🎉', {
+                        body: 'Your parking session has ended. Thank you!',
+                        icon: '🚗',
+                        badge: '✅'
+                    });
+                } else if (Notification.permission !== 'denied') {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            new Notification('Exit Confirmed! 🎉', {
+                                body: 'Your parking session has ended. Thank you!',
+                                icon: '🚗'
+                            });
+                        }
+                    });
+                }
+            }
+        }
+
+        // Auto-download receipt option
+        function autoDownloadReceipt() {
+            const shouldDownload = localStorage.getItem('autoDownloadReceipt');
+            if (shouldDownload === 'true') {
+                setTimeout(() => {
+                    if (confirm('📄 Would you like to download your receipt?')) {
+                        window.print();
+                    }
+                }, 2000);
+            }
+        }
+
+        // Initialize on load
+        window.addEventListener('load', function() {
+            // Trigger animations
+            setTimeout(createConfetti, 500);
+            setTimeout(playSuccessSound, 800);
+            setTimeout(showNotification, 1000);
+            
+            // Auto download prompt
+            autoDownloadReceipt();
+
+            // Log for debugging
+            console.log('✅ Exit Confirmed Page Loaded');
+            console.log('Booking ID: #PK-{{ booking.id }}');
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+P for print
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                window.print();
+            }
+            
+            // Ctrl+H for home
+            if (e.ctrlKey && e.key === 'h') {
+                e.preventDefault();
+                window.location.href = '{% url "home" %}';
+            }
+        });
+
+        // Track page view (analytics)
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'exit_confirmed', {
+                'booking_id': 'PK-{{ booking.id }}',
+                'amount': '{{ exit_details.total_paid }}'
+            });
+        }
+    </script>
+</body>
+</html>

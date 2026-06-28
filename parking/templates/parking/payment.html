@@ -1,0 +1,1234 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Payment - Smart Parking System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .breadcrumb {
+            color: white;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb a {
+            color: white;
+            text-decoration: none;
+            opacity: 0.8;
+        }
+
+        .breadcrumb a:hover {
+            opacity: 1;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .payment-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .header-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .booking-summary {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 5px solid #667eea;
+        }
+
+        .summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .booking-id {
+            background: #667eea;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            background: #ff9800;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #e0e0e0;
+            align-items: center;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            color: #666;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .summary-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .summary-row.total {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+            border-top: 2px solid #667eea;
+            padding-top: 1rem;
+            margin-top: 0.5rem;
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .payment-methods {
+            margin: 1.5rem 0;
+        }
+
+        .method-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .payment-options {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .payment-option {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .payment-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .payment-option:hover::before {
+            left: 100%;
+        }
+
+        .payment-option:hover {
+            border-color: #667eea;
+            background: #f5f5ff;
+            transform: translateX(5px);
+        }
+
+        .payment-option.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f5f5ff 0%, #e8ebff 100%);
+            border-width: 3px;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .payment-option.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #4caf50;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            animation: checkmark 0.3s ease-out;
+        }
+
+        @keyframes checkmark {
+            from {
+                transform: scale(0) rotate(-180deg);
+            }
+            to {
+                transform: scale(1) rotate(0);
+            }
+        }
+
+        .payment-icon {
+            font-size: 2rem;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: white;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .payment-info {
+            flex: 1;
+        }
+
+        .payment-info h3 {
+            color: #333;
+            margin-bottom: 0.3rem;
+            font-size: 1.05rem;
+        }
+
+        .payment-info p {
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -5px;
+            right: 10px;
+            background: #ff9800;
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .qr-section {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            margin: 1.5rem 0;
+            display: none;
+            border: 2px dashed #667eea;
+        }
+
+        .qr-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            background: white;
+            margin: 1rem auto;
+            border: 5px solid #667eea;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            animation: qrPulse 2s infinite;
+        }
+
+        @keyframes qrPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .qr-instructions {
+            color: #666;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .upi-section {
+            display: none;
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .upi-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .upi-section label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .upi-input {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.8rem;
+        }
+
+        .upi-input input {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .upi-input input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .upi-input button {
+            padding: 1rem 2rem;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upi-input button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .card-section {
+            display: none;
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .card-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .card-input-group {
+            margin-bottom: 1rem;
+        }
+
+        .card-input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .card-input-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
+        .card-input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .card-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .timer {
+            text-align: center;
+            margin: 1rem 0;
+            font-size: 1.1rem;
+            color: #ff9800;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .timer-icon {
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1.2rem;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+            transform: translateY(-2px);
+        }
+
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            color: #4caf50;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #e8f5e9;
+            border-radius: 10px;
+        }
+
+        .payment-summary-sidebar {
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+        }
+
+        .promo-section {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 5px solid #ff9800;
+        }
+
+        .promo-section h3 {
+            color: #ff9800;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .promo-input {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .promo-input input {
+            flex: 1;
+            padding: 0.8rem;
+            border: 2px solid #ff9800;
+            border-radius: 10px;
+            font-size: 0.95rem;
+        }
+
+        .promo-input button {
+            padding: 0.8rem 1.5rem;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .processing-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .processing-overlay.active {
+            display: flex;
+        }
+
+        .processing-content {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            text-align: center;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+
+        .processing-content h2 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .processing-content p {
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .payment-summary-sidebar {
+                position: static;
+            }
+
+            body {
+                padding: 1rem;
+            }
+
+            .payment-card {
+                padding: 1.5rem;
+            }
+
+            .qr-code {
+                width: 180px;
+                height: 180px;
+            }
+
+            .card-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="{% url 'home' %}">🏠 Home</a> → 
+            <a href="{% url 'park_vehicle' %}">🚗 Book Slot</a> → 
+            <span>💳 Payment</span>
+        </div>
+
+        <div class="main-grid">
+            <!-- Left Panel - Payment Options -->
+            <div>
+                <div class="payment-card">
+                    <div class="header">
+                        <div class="header-icon">💳</div>
+                        <h1>Complete Your Payment</h1>
+                        <p>Choose your preferred payment method to confirm booking</p>
+                    </div>
+
+                    <!-- Booking Summary -->
+                    <div class="booking-summary">
+                        <div class="summary-header">
+                            <span class="booking-id">ID: #PK-{{ booking.id }}</span>
+                            <span class="status-badge">🟡 Pending Payment</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span class="summary-label">🚗 Vehicle Number:</span>
+                            <span class="summary-value">{{ booking.vehicle_number }}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">🚙 Vehicle Type:</span>
+                            <span class="summary-value">{{ booking.vehicle_type|title }}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">📍 Parking Lot:</span>
+                            <span class="summary-value">{{ booking.parking_lot }}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">🅿️ Slot Number:</span>
+                            <span class="summary-value">{{ booking.slot_number }}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">🕐 Entry Time:</span>
+                            <span class="summary-value">{{ booking.from_time|date:"d M Y, h:i A" }}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">⏰ Duration:</span>
+                            <span class="summary-value">{{ booking.duration }} hour(s)</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">💰 Rate:</span>
+                            <span class="summary-value">₹{{ booking.rate }}/hour</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Total Amount:</span>
+                            <span>₹<span id="totalAmount">{{ booking.total_amount }}</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Payment Methods -->
+                    <div class="payment-methods">
+                        <h3 class="method-title">💳 Select Payment Method:</h3>
+                        
+                        <div class="payment-options">
+                            <!-- Google Pay -->
+                            <div class="payment-option" onclick="selectPayment('gpay', this)">
+                                <span class="popular-badge">⚡ Popular</span>
+                                <div class="payment-icon" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); color: white;">
+                                    G
+                                </div>
+                                <div class="payment-info">
+                                    <h3>Google Pay</h3>
+                                    <p>Fast & secure UPI payment</p>
+                                </div>
+                            </div>
+
+                            <!-- PhonePe -->
+                            <div class="payment-option" onclick="selectPayment('phonepe', this)">
+                                <div class="payment-icon" style="background: #5f259f; color: white;">
+                                    P
+                                </div>
+                                <div class="payment-info">
+                                    <h3>PhonePe</h3>
+                                    <p>Pay using PhonePe wallet or UPI</p>
+                                </div>
+                            </div>
+
+                            <!-- Paytm -->
+                            <div class="payment-option" onclick="selectPayment('paytm', this)">
+                                <div class="payment-icon" style="background: #00baf2; color: white;">
+                                    M
+                                </div>
+                                <div class="payment-info">
+                                    <h3>Paytm</h3>
+                                    <p>Pay via Paytm wallet or UPI</p>
+                                </div>
+                            </div>
+
+                            <!-- UPI -->
+                            <div class="payment-option" onclick="selectPayment('upi', this)">
+                                <div class="payment-icon" style="background: #ff9800; color: white;">
+                                    U
+                                </div>
+                                <div class="payment-info">
+                                    <h3>UPI / Other Apps</h3>
+                                    <p>Enter your UPI ID manually</p>
+                                </div>
+                            </div>
+
+                            <!-- Card -->
+                            <div class="payment-option" onclick="selectPayment('card', this)">
+                                <div class="payment-icon" style="background: linear-gradient(135deg, #f44336 0%, #e91e63 100%); color: white;">
+                                    💳
+                                </div>
+                                <div class="payment-info">
+                                    <h3>Credit / Debit Card</h3>
+                                    <p>Visa, Mastercard, RuPay accepted</p>
+                                </div>
+                            </div>
+
+                            <!-- Cash -->
+                            <div class="payment-option" onclick="selectPayment('cash', this)">
+                                <div class="payment-icon" style="background: linear-gradient(135deg, #4caf50 0%, #8bc34a 100%); color: white;">
+                                    💵
+                                </div>
+                                <div class="payment-info">
+                                    <h3>Pay at Counter</h3>
+                                    <p>Pay cash at parking entrance</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- UPI Input Section -->
+                    <div class="upi-section" id="upiSection">
+                        <label>📱 Enter Your UPI ID:</label>
+                        <div class="upi-input">
+                            <input type="text" id="upiId" placeholder="yourname@paytm" />
+                            <button onclick="verifyUPI()">Verify</button>
+                        </div>
+                        <p style="margin-top: 0.8rem; color: #666; font-size: 0.85rem;">
+                            💡 Example: yourname@paytm, yourname@oksbi, yourname@ybl
+                        </p>
+                    </div>
+
+                    <!-- Card Section -->
+                    <div class="card-section" id="cardSection">
+                        <div class="card-input-group">
+                            <label>💳 Card Number:</label>
+                            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" />
+                        </div>
+                        <div class="card-row">
+                            <div class="card-input-group">
+                                <label>📅 Expiry Date:</label>
+                                <input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5" />
+                            </div>
+                            <div class="card-input-group">
+                                <label>🔒 CVV:</label>
+                                <input type="password" id="cardCvv" placeholder="123" maxlength="3" />
+                            </div>
+                        </div>
+                        <div class="card-input-group">
+                            <label>👤 Cardholder Name:</label>
+                            <input type="text" id="cardName" placeholder="Enter name on card" />
+                        </div>
+                    </div>
+
+                    <!-- QR Code Section -->
+                    <div class="qr-section" id="qrSection">
+                        <h3 style="color: #667eea; margin-bottom: 1rem;">📱 Scan QR Code to Pay</h3>
+                        <div class="qr-code">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23000'/%3E%3Crect x='10' y='10' width='30' height='30' fill='%23fff'/%3E%3Crect x='110' y='10' width='30' height='30' fill='%23fff'/%3E%3Crect x='10' y='110' width='30' height='30' fill='%23fff'/%3E%3C/svg%3E" alt="QR Code" style="width: 100%; height: 100%;" />
+                        </div>
+                        <div class="qr-instructions">
+                            <p>✓ Open your payment app (GPay/PhonePe/Paytm)</p>
+                            <p>✓ Scan this QR code</p>
+                            <p>✓ Complete payment of ₹{{ booking.total_amount }}</p>
+                        </div>
+                        <div class="timer">
+                            <span class="timer-icon">⏳</span>
+                            <span id="timerText">Waiting for payment...</span>
+                        </div>
+                    </div>
+
+                    <!-- Secure Badge -->
+                    <div class="secure-badge">
+                        <span>🔒</span>
+                        <span>256-bit SSL Encrypted • 100% Secure Payment • PCI DSS Compliant</span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <form method="POST" id="paymentForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="payment_method" id="selectedMethod">
+                        <input type="hidden" name="booking_id" value="{{ booking.id }}">
+                        
+                        <button type="submit" class="btn btn-primary" id="payBtn" disabled>
+                            <span id="btnText">💳 Proceed to Pay ₹{{ booking.total_amount }}</span>
+                        </button>
+                        <a href="{% url 'park_vehicle' %}" class="btn btn-secondary">
+                            ❌ Cancel & Go Back
+                        </a>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Panel - Summary & Promo -->
+            <div class="payment-summary-sidebar">
+                <!-- Promo Code Section -->
+                <div class="promo-section">
+                    <h3>🎁 Have a Promo Code?</h3>
+                    <div class="promo-input">
+                        <input type="text" id="promoCode" placeholder="Enter code" />
+                        <button onclick="applyPromo()">Apply</button>
+                    </div>
+                    <p style="margin-top: 0.8rem; font-size: 0.85rem; color: #666;">
+                        💡 Get instant discounts on your booking!
+                    </p>
+                </div>
+
+                <!-- Quick Summary -->
+                <div class="payment-card">
+                    <h3 style="margin-bottom: 1rem; color: #333;">📊 Payment Breakdown</h3>
+                    <div class="summary-row">
+                        <span class="summary-label">Base Amount:</span>
+                        <span class="summary-value">₹{{ booking.base_amount }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">GST (18%):</span>
+                        <span class="summary-value">₹{{ booking.gst_amount }}</span>
+                    </div>
+                    <div class="summary-row" id="discountRow" style="display: none;">
+                        <span class="summary-label" style="color: #4caf50;">Discount:</span>
+                        <span class="summary-value" style="color: #4caf50;">-₹<span id="discountAmount">0</span></span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Final Amount:</span>
+                        <span>₹<span id="finalAmount">{{ booking.total_amount }}</span></span>
+                    </div>
+                </div>
+
+                <!-- Help Section -->
+                <div class="payment-card" style="margin-top: 1.5rem;">
+                    <h3 style="margin-bottom: 1rem; color: #333;">❓ Need Help?</h3>
+                    <p style="color: #666; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem;">
+                        Having trouble with payment? Contact our support team.
+                    </p>
+                    <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                        <a href="tel:+918080808080" style="text-decoration: none; color: #667eea; display: flex; align-items: center; gap: 0.5rem;">
+                            📞 + 9359845632
+                        </a>
+                        <a href="mailto:support@parkease.com" style="text-decoration: none; color: #667eea; display: flex; align-items: center; gap: 0.5rem;">
+                            ✉️ ajitilage@gmail.com
+                        </a>
+                        <a href="#" style="text-decoration: none; color: #667eea; display: flex; align-items: center; gap: 0.5rem;">
+                            💬 Live Chat Support
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Why Choose Us -->
+                <div class="payment-card" style="margin-top: 1.5rem; background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);">
+                    <h3 style="margin-bottom: 1rem; color: #2e7d32;">✨ Why Book With Us?</h3>
+                    <div style="display: flex; flex-direction: column; gap: 0.8rem; font-size: 0.9rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span>⚡</span>
+                            <span>Instant Confirmation</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span>🔒</span>
+                            <span>100% Secure Payments</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span>💰</span>
+                            <span>Best Price Guarantee</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span>🎯</span>
+                            <span>Real-Time Slot Updates</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span>📱</span>
+                            <span>Digital QR Entry/Exit</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing Overlay -->
+    <div class="processing-overlay" id="processingOverlay">
+        <div class="processing-content">
+            <div class="spinner"></div>
+            <h2 id="processingTitle">Processing Payment...</h2>
+            <p id="processingText">Please wait while we confirm your transaction</p>
+        </div>
+    </div>
+
+    <script>
+        let selectedPaymentMethod = null;
+        let timerInterval;
+        let timerSeconds = 0;
+
+        function selectPayment(method, element) {
+            // Remove previous selection
+            document.querySelectorAll('.payment-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+
+            // Add selection
+            element.classList.add('selected');
+            selectedPaymentMethod = method;
+            document.getElementById('selectedMethod').value = method;
+            document.getElementById('payBtn').disabled = false;
+
+            // Hide all input sections
+            document.getElementById('upiSection').classList.remove('active');
+            document.getElementById('cardSection').classList.remove('active');
+            document.getElementById('qrSection').classList.remove('active');
+
+            // Show relevant section
+            if (method === 'upi') {
+                document.getElementById('upiSection').classList.add('active');
+            } else if (method === 'card') {
+                document.getElementById('cardSection').classList.add('active');
+            } else if (['gpay', 'phonepe', 'paytm'].includes(method)) {
+                document.getElementById('qrSection').classList.add('active');
+                startPaymentTimer();
+            }
+
+            // Update button text
+            const methodNames = {
+                'gpay': 'Google Pay',
+                'phonepe': 'PhonePe',
+                'paytm': 'Paytm',
+                'upi': 'UPI',
+                'card': 'Card',
+                'cash': 'Counter'
+            };
+            document.getElementById('btnText').textContent = 
+                `💳 Pay ₹{{ booking.total_amount }} via ${methodNames[method]}`;
+        }
+
+        function verifyUPI() {
+            const upiId = document.getElementById('upiId').value.trim();
+            const upiPattern = /^[\w.-]+@[\w.-]+$/;
+            
+            if (upiId && upiPattern.test(upiId)) {
+                // Show success animation
+                const input = document.getElementById('upiId');
+                input.style.borderColor = '#4caf50';
+                input.style.background = '#e8f5e9';
+                
+                // Show QR section
+                document.getElementById('qrSection').classList.add('active');
+                startPaymentTimer();
+                
+                // Show success message
+                alert('✅ UPI ID verified successfully! Scan the QR code or click "Proceed to Pay".');
+            } else {
+                alert('❌ Invalid UPI ID format!\n\nPlease enter a valid UPI ID like:\nyourname@paytm\nyourname@oksbi\nyourname@ybl');
+            }
+        }
+
+        function startPaymentTimer() {
+            timerSeconds = 0;
+            clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                timerSeconds++;
+                const minutes = Math.floor(timerSeconds / 60);
+                const seconds = timerSeconds % 60;
+                document.getElementById('timerText').textContent = 
+                    `Waiting for payment... ${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function applyPromo() {
+            const promoCode = document.getElementById('promoCode').value.trim().toUpperCase();
+            
+            if (!promoCode) {
+                alert('⚠️ Please enter a promo code!');
+                return;
+            }
+
+            // Simulate promo code validation
+            const validCodes = {
+                'PARK10': 10,
+                'FIRST20': 20,
+                'SAVE50': 50
+            };
+
+            if (validCodes[promoCode]) {
+                const discount = validCodes[promoCode];
+                const currentTotal = parseFloat(document.getElementById('totalAmount').textContent);
+                const newTotal = currentTotal - discount;
+
+                // Update amounts
+                document.getElementById('discountAmount').textContent = discount;
+                document.getElementById('finalAmount').textContent = newTotal;
+                document.getElementById('totalAmount').textContent = newTotal;
+                document.getElementById('discountRow').style.display = 'flex';
+
+                // Update button
+                document.getElementById('btnText').textContent = 
+                    document.getElementById('btnText').textContent.replace(/₹\d+/, `₹${newTotal}`);
+
+                // Success message
+                alert(`🎉 Promo code applied!\n\nYou saved ₹${discount}!`);
+                
+                // Disable promo input
+                document.getElementById('promoCode').disabled = true;
+            } else {
+                alert('❌ Invalid promo code!\n\nTry these codes:\n• PARK10 (₹10 off)\n• FIRST20 (₹20 off)\n• SAVE50 (₹50 off)');
+            }
+        }
+
+        // Card number formatting
+        document.getElementById('cardNumber')?.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+            e.target.value = formattedValue;
+        });
+
+        // Expiry date formatting
+        document.getElementById('cardExpiry')?.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            e.target.value = value;
+        });
+
+        // CVV validation
+        document.getElementById('cardCvv')?.addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '').substring(0, 3);
+        });
+
+        // Form submission
+        document.getElementById('paymentForm').addEventListener('submit', function(e) {
+            if (!selectedPaymentMethod) {
+                e.preventDefault();
+                alert('⚠️ Please select a payment method!');
+                return false;
+            }
+
+            // Validate based on payment method
+            if (selectedPaymentMethod === 'upi') {
+                const upiId = document.getElementById('upiId').value.trim();
+                if (!upiId || !upiId.includes('@')) {
+                    e.preventDefault();
+                    alert('⚠️ Please enter a valid UPI ID!');
+                    return false;
+                }
+            } else if (selectedPaymentMethod === 'card') {
+                const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+                const cardExpiry = document.getElementById('cardExpiry').value;
+                const cardCvv = document.getElementById('cardCvv').value;
+                const cardName = document.getElementById('cardName').value.trim();
+
+                if (cardNumber.length !== 16) {
+                    e.preventDefault();
+                    alert('⚠️ Please enter a valid 16-digit card number!');
+                    return false;
+                }
+                if (!cardExpiry || cardExpiry.length !== 5) {
+                    e.preventDefault();
+                    alert('⚠️ Please enter a valid expiry date (MM/YY)!');
+                    return false;
+                }
+                if (cardCvv.length !== 3) {
+                    e.preventDefault();
+                    alert('⚠️ Please enter a valid 3-digit CVV!');
+                    return false;
+                }
+                if (!cardName) {
+                    e.preventDefault();
+                    alert('⚠️ Please enter cardholder name!');
+                    return false;
+                }
+            }
+
+            // Show processing overlay for non-cash payments
+            if (selectedPaymentMethod !== 'cash') {
+                e.preventDefault();
+                
+                const overlay = document.getElementById('processingOverlay');
+                overlay.classList.add('active');
+                
+                // Disable form
+                document.getElementById('payBtn').disabled = true;
+
+                // Simulate payment processing
+                let progressSteps = [
+                    { time: 1000, title: 'Connecting to payment gateway...', text: 'Establishing secure connection' },
+                    { time: 2000, title: 'Verifying payment details...', text: 'Please wait' },
+                    { time: 3000, title: 'Processing payment...', text: 'Do not close this window' },
+                    { time: 4000, title: 'Confirming transaction...', text: 'Almost done!' }
+                ];
+
+                let currentStep = 0;
+
+                function processNextStep() {
+                    if (currentStep < progressSteps.length) {
+                        const step = progressSteps[currentStep];
+                        setTimeout(() => {
+                            document.getElementById('processingTitle').textContent = step.title;
+                            document.getElementById('processingText').textContent = step.text;
+                            currentStep++;
+                            processNextStep();
+                        }, step.time);
+                    } else {
+                        // Payment successful - submit form
+                        setTimeout(() => {
+                            document.getElementById('processingTitle').textContent = '✅ Payment Successful!';
+                            document.getElementById('processingText').textContent = 'Redirecting to confirmation page...';
+                            
+                            setTimeout(() => {
+                                document.getElementById('paymentForm').submit();
+                            }, 1500);
+                        }, 1000);
+                    }
+                }
+
+                processNextStep();
+            } else {
+                // For cash payment, submit directly
+                const confirmed = confirm('⚠️ You have selected "Pay at Counter".\n\nPlease pay ₹{{ booking.total_amount }} at the parking entrance.\n\nYour booking will be confirmed upon payment.\n\nProceed?');
+                if (!confirmed) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        });
+
+        // Simulate real-time payment status check (for QR payments)
+        function checkPaymentStatus() {
+            if (['gpay', 'phonepe', 'paytm'].includes(selectedPaymentMethod)) {
+                // Simulate random payment success after 10-30 seconds
+                const randomTime = Math.floor(Math.random() * 20000) + 10000;
+                
+                setTimeout(() => {
+                    if (Math.random() > 0.3) { // 70% success rate
+                        document.getElementById('timerText').innerHTML = 
+                            '<span style="color: #4caf50;">✅ Payment received!</span>';
+                        clearInterval(timerInterval);
+                        
+                        // Auto submit after 2 seconds
+                        setTimeout(() => {
+                            document.getElementById('paymentForm').submit();
+                        }, 2000);
+                    }
+                }, randomTime);
+            }
+        }
+
+        // Auto-fill test card details (for development)
+        function fillTestCard() {
+            document.getElementById('cardNumber').value = '4111 1111 1111 1111';
+            document.getElementById('cardExpiry').value = '12/25';
+            document.getElementById('cardCvv').value = '123';
+            document.getElementById('cardName').value = 'Test User';
+        }
+
+        // Add keyboard shortcut for test mode (Ctrl+Shift+T)
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'T') {
+                fillTestCard();
+                alert('🧪 Test card details filled!\n\nCard: 4111 1111 1111 1111\nExpiry: 12/25\nCVV: 123');
+            }
+        });
+
+        // Prevent back button during payment
+        history.pushState(null, null, location.href);
+        window.onpopstate = function () {
+            const confirmed = confirm('⚠️ Are you sure you want to leave?\n\nYour payment progress will be lost.');
+            if (confirmed) {
+                history.back();
+            } else {
+                history.pushState(null, null, location.href);
+            }
+        };
+
+        // Auto-select first payment method on page load
+        window.addEventListener('load', function() {
+            // Show helpful tooltip
+            setTimeout(() => {
+                console.log('💡 Pro tip: Use promo codes PARK10, FIRST20, or SAVE50 for discounts!');
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

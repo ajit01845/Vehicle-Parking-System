@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Parkease</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Video/Image Background Layer */
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+
+        .background-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.6);
+        }
+
+        /* Gradient Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                135deg, 
+                rgba(17, 24, 39, 0.85) 0%, 
+                rgba(30, 41, 59, 0.75) 50%, 
+                rgba(51, 65, 85, 0.85) 100%
+            );
+            z-index: -1;
+        }
+
+        /* Animated Particles/Lights */
+        .particle {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float 15s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) {
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .particle:nth-child(2) {
+            top: 60%;
+            left: 80%;
+            animation-delay: 3s;
+        }
+
+        .particle:nth-child(3) {
+            top: 40%;
+            right: 15%;
+            animation-delay: 6s;
+        }
+
+        .particle:nth-child(4) {
+            bottom: 30%;
+            left: 30%;
+            animation-delay: 9s;
+        }
+
+        .particle:nth-child(5) {
+            top: 80%;
+            right: 25%;
+            animation-delay: 12s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+                opacity: 0.6;
+            }
+            50% {
+                transform: translateY(-40px) scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        /* Realistic Car Animation */
+        .car-container {
+            position: fixed;
+            bottom: 15%;
+            left: -250px;
+            z-index: 1;
+            animation: carDrive 18s ease-in-out infinite;
+        }
+
+        .car-image {
+            width: 200px;
+            height: auto;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
+            position: relative;
+        }
+
+        .car-lights {
+            position: absolute;
+            top: 50%;
+            right: -30px;
+            width: 80px;
+            height: 40px;
+            background: radial-gradient(
+                ellipse at center,
+                rgba(255, 235, 59, 0.8) 0%,
+                rgba(255, 193, 7, 0.4) 40%,
+                transparent 70%
+            );
+            filter: blur(8px);
+            transform: translateY(-50%);
+            opacity: 0;
+        }
+
+        .car-container.driving .car-lights {
+            opacity: 1;
+        }
+
+        @keyframes carDrive {
+            0% {
+                left: -250px;
+            }
+            25% {
+                left: 50%;
+                transform: translateX(-50%);
+            }
+            50% {
+                left: 110%;
+            }
+            51% {
+                left: 110%;
+                transform: scaleX(-1);
+            }
+            75% {
+                left: 50%;
+                transform: translateX(-50%) scaleX(-1);
+            }
+            100% {
+                left: -250px;
+                transform: scaleX(-1);
+            }
+        }
+
+        /* Parking Lines Effect */
+        .parking-lines {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 80px,
+                rgba(255, 255, 255, 0.1) 80px,
+                rgba(255, 255, 255, 0.1) 85px
+            );
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        /* Glassmorphism Register Container */
+        .register-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            max-width: 420px;
+            width: 100%;
+            padding: 45px 40px;
+            position: relative;
+            z-index: 10;
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(60px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Glow Effect Behind Container */
+        .register-container::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(
+                circle,
+                rgba(139, 92, 246, 0.15) 0%,
+                transparent 70%
+            );
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.5;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.05);
+            }
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+        
+        .logo h1 {
+            color: #fff;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.5px;
+        }
+
+        .logo-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+            display: inline-block;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-15px) rotate(5deg);
+            }
+        }
+        
+        .logo p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            font-weight: 400;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+            font-size: 14px;
+            letter-spacing: 0.3px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            font-size: 15px;
+            color: #fff;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(139, 92, 246, 0.8);
+            box-shadow: 
+                0 0 0 3px rgba(139, 92, 246, 0.1),
+                0 0 20px rgba(139, 92, 246, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 400px;
+            height: 400px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .links {
+            text-align: center;
+            margin-top: 25px;
+        }
+        
+        .links a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .links a:hover {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.8);
+        }
+        
+        .divider {
+            margin: 18px 0;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+        }
+
+        /* Admin Link */
+        .admin-link {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            text-decoration: none;
+            color: #fff;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+            font-size: 14px;
+        }
+
+        .admin-link:hover {
+            background: rgba(99, 102, 241, 0.8);
+            border-color: rgba(99, 102, 241, 1);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .admin-link::before {
+            content: "🔐";
+            font-size: 18px;
+        }
+        
+        .messages {
+            margin-bottom: 25px;
+        }
+        
+        .alert {
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            animation: slideIn 0.5s ease-out;
+            backdrop-filter: blur(10px);
+            border: 1px solid;
+            font-size: 14px;
+        }
+        
+        .alert-error {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fecaca;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        
+        .alert-success {
+            background: rgba(34, 197, 94, 0.15);
+            color: #bbf7d0;
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Password Strength Indicator */
+        .password-strength {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0;
+            transition: all 0.3s;
+            border-radius: 2px;
+        }
+
+        .password-strength-bar.weak {
+            width: 33%;
+            background: #ef4444;
+        }
+
+        .password-strength-bar.medium {
+            width: 66%;
+            background: #f59e0b;
+        }
+
+        .password-strength-bar.strong {
+            width: 100%;
+            background: #10b981;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .register-container {
+                padding: 35px 25px;
+                max-width: 90%;
+            }
+
+            .logo h1 {
+                font-size: 26px;
+            }
+
+            .car-container {
+                bottom: 10%;
+            }
+
+            .car-image {
+                width: 150px;
+            }
+
+            .admin-link {
+                bottom: 15px;
+                right: 15px;
+                padding: 10px 18px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Image/Video Layer -->
+    <div class="background-container">
+        <!-- Replace with your own image URL -->
+        <img src="https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=1920&q=80" 
+             alt="Parking Lot" 
+             class="background-image">
+    </div>
+
+    <!-- Gradient Overlay -->
+    <div class="overlay"></div>
+
+    <!-- Animated Particles -->
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+
+    <!-- Parking Lines -->
+    <div class="parking-lines"></div>
+
+    <!-- Animated Car (Using SVG Car) -->
+    <div class="car-container driving">
+        <svg class="car-image" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- Car Body -->
+            <rect x="20" y="50" width="140" height="30" rx="5" fill="#3b82f6"/>
+            <!-- Car Top -->
+            <path d="M 50 50 L 70 30 L 120 30 L 140 50 Z" fill="#2563eb"/>
+            <!-- Windows -->
+            <rect x="75" y="35" width="35" height="12" rx="2" fill="#87ceeb" opacity="0.8"/>
+            <!-- Wheels -->
+            <circle cx="50" cy="80" r="12" fill="#2c3e50"/>
+            <circle cx="50" cy="80" r="8" fill="#34495e"/>
+            <circle cx="130" cy="80" r="12" fill="#2c3e50"/>
+            <circle cx="130" cy="80" r="8" fill="#34495e"/>
+            <!-- Headlights -->
+            <circle cx="160" cy="60" r="4" fill="#fff" opacity="0.9"/>
+            <circle cx="160" cy="70" r="4" fill="#ffd700" opacity="0.9"/>
+        </svg>
+        <div class="car-lights"></div>
+    </div>
+
+    <!-- Glassmorphic Register Form -->
+    <div class="register-container">
+        <div class="logo">
+            <div class="logo-icon">✨</div>
+            <h1>Sign Up</h1>
+            <p>Create your account to get started</p>
+        </div>
+        
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <form method="POST" id="registerForm">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required placeholder="Choose a username" autocomplete="username">
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required placeholder="Enter your email" autocomplete="email">
+            </div>
+            
+            <div class="form-group">
+                <label for="password1">Password</label>
+                <input type="password" id="password1" name="password1" required placeholder="Create a password" autocomplete="new-password">
+                <div class="password-strength">
+                    <div class="password-strength-bar" id="strengthBar"></div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="password2">Confirm Password</label>
+                <input type="password" id="password2" name="password2" required placeholder="Re-enter password" autocomplete="new-password">
+            </div>
+            
+            <button type="submit" class="btn">Create Account</button>
+        </form>
+        
+        <div class="links">
+            <p>Already have an account? <a href="{% url 'user_login' %}">Sign In</a></p>
+            <div class="divider">or</div>
+            <p><a href="{% url 'landing' %}">← Back to Home</a></p>
+        </div>
+    </div>
+
+    <!-- Admin Panel Link -->
+    <a href="/admin/" class="admin-link">Admin Panel</a>
+
+    <script>
+        // Add headlight effect when car is moving
+        const carContainer = document.querySelector('.car-container');
+        setInterval(() => {
+            carContainer.classList.toggle('driving');
+        }, 9000);
+
+        // Password strength indicator
+        const password1 = document.getElementById('password1');
+        const strengthBar = document.getElementById('strengthBar');
+
+        password1.addEventListener('input', function() {
+            const value = this.value;
+            let strength = 0;
+
+            if (value.length >= 8) strength++;
+            if (/[a-z]/.test(value) && /[A-Z]/.test(value)) strength++;
+            if (/\d/.test(value)) strength++;
+            if (/[^a-zA-Z0-9]/.test(value)) strength++;
+
+            strengthBar.className = 'password-strength-bar';
+            if (strength <= 1) {
+                strengthBar.classList.add('weak');
+            } else if (strength <= 3) {
+                strengthBar.classList.add('medium');
+            } else {
+                strengthBar.classList.add('strong');
+            }
+
+            if (value.length === 0) {
+                strengthBar.className = 'password-strength-bar';
+            }
+        });
+    </script>
+</body>
+</html>

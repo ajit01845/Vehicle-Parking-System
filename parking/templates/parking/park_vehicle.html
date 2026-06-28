@@ -1,0 +1,2404 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Parking - Parkease</title>
+    
+    <!-- Leaflet CSS for Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --light: #f8fafc;
+            --dark: #1e293b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 10px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .logo-icon { font-size: 32px; }
+
+        .logo-text h1 {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .logo-text .tagline {
+            font-size: 11px;
+            color: #64748b;
+        }
+        
+        .nav-center {
+            display: flex;
+            gap: 5px;
+            list-style: none;
+        }
+
+        .nav-center a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 600;
+            padding: 8px 15px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+
+        .nav-center a:hover, .nav-center a.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-logout {
+            background: linear-gradient(135deg, var(--danger), #dc2626);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px 25px;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        /* ========== MAP SECTION ========== */
+        .map-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .map-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .map-title {
+            font-size: 22px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-destination {
+            position: relative;
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .search-destination input {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .search-destination input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .map-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .map-btn {
+            padding: 10px 18px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .map-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .map-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-color: var(--primary);
+        }
+
+        #map {
+            height: 450px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .map-legend {
+            display: flex;
+            gap: 25px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .legend-blue { background: #3b82f6; }
+        .legend-yellow { background: #f59e0b; }
+        .legend-green { background: #10b981; }
+        .legend-red { background: #ef4444; }
+
+        /* ========== MONTHLY PASS BANNER ========== */
+        .monthly-pass-banner {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .pass-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .pass-header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .pass-icon {
+            font-size: 48px;
+            animation: bounce 2s infinite;
+        }
+
+        .pass-badge {
+            background: rgba(255, 255, 255, 0.25);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+        }
+
+        .pass-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .pass-card {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s;
+        }
+
+        .pass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        /* ========== STEPPER ========== */
+        .stepper {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+            overflow-x: auto;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            min-width: 100px;
+        }
+
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: -1;
+        }
+
+        .step.active:not(:last-child)::after {
+            background: var(--primary);
+        }
+
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #999;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+
+        .step.active .step-circle {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .step.completed .step-circle {
+            background: var(--success);
+            color: white;
+        }
+
+        .step-label {
+            font-size: 11px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .step.active .step-label {
+            color: var(--primary);
+        }
+
+        .message {
+            padding: 12px 18px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            animation: slideIn 0.3s;
+        }
+
+        .message.success {
+            background: #dcfce7;
+            color: var(--success);
+            border-left: 4px solid var(--success);
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: var(--danger);
+            border-left: 4px solid var(--danger);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 20px;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .right-panel {
+            position: sticky;
+            top: 85px;
+            height: fit-content;
+        }
+
+        .step-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+        }
+
+        .step-card.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .step-number {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .step-title {
+            font-size: 20px;
+            color: var(--dark);
+            font-weight: 700;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .required {
+            color: var(--danger);
+            font-size: 12px;
+        }
+
+        .vehicle-type-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .vehicle-type-card {
+            border: 3px solid #e0e0e0;
+            padding: 20px 12px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .vehicle-type-card:hover {
+            border-color: var(--primary);
+            background: #f5f5ff;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
+        }
+
+        .vehicle-type-card.selected {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-5px);
+        }
+
+        .vehicle-type-card .icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .vehicle-type-card .name {
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .vehicle-type-card .price {
+            font-size: 13px;
+            opacity: 0.9;
+            font-weight: 600;
+        }
+
+        .landmark-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .landmark-card {
+            border: 3px solid #e0e0e0;
+            padding: 20px 15px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .landmark-card:hover {
+            border-color: var(--primary);
+            background: #f5f5ff;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
+        }
+
+        .landmark-card.selected {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .landmark-card .icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .landmark-card .name {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .landmark-card .stats {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 8px;
+        }
+
+        .floor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 12px;
+        }
+
+        .floor-option {
+            border: 3px solid #e0e0e0;
+            padding: 15px 10px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .floor-option:hover {
+            border-color: var(--primary);
+            background: #f5f5ff;
+            transform: translateY(-3px);
+        }
+
+        .floor-option.selected {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            gap: 12px;
+        }
+
+        .slot-card {
+            border: 3px solid #e0e0e0;
+            padding: 12px 8px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .slot-card.available {
+            background: #e8f5e9;
+            border-color: var(--success);
+        }
+
+        .slot-card.available:hover {
+            border-color: #2e7d32;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .slot-card.occupied {
+            background: #fee2e2;
+            border-color: var(--danger);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .slot-card.maintenance {
+            background: #fff3e0;
+            border-color: var(--warning);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .slot-card.selected {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-color: var(--primary);
+            border-width: 4px;
+            transform: scale(1.08);
+        }
+
+        .slot-number {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 15px;
+            background: #f9f9f9;
+            border-radius: 12px;
+            border: 2px dashed #e0e0e0;
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .booking-summary {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .summary-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+
+        .summary-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .summary-value {
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .cost-calculator {
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 4px solid var(--warning);
+        }
+
+        .cost-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .total-cost {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 15px;
+            border-top: 2px solid var(--warning);
+            margin-top: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--warning);
+        }
+
+        .duration-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .duration-option {
+            border: 2px solid #e0e0e0;
+            padding: 12px 8px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .duration-option:hover {
+            border-color: var(--primary);
+            background: #f5f5ff;
+        }
+
+        .duration-option.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .duration-option .time {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .duration-option .price {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+
+        .custom-time-picker {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 15px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .custom-time-picker h4 {
+            font-size: 14px;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+
+        .time-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .time-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .time-input-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .time-input-group input {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .terms-conditions {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border: 2px solid #e0e0e0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .terms-conditions h4 {
+            font-size: 15px;
+            margin-bottom: 12px;
+            color: var(--dark);
+        }
+
+        .terms-conditions ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .terms-conditions li {
+            padding: 8px 0;
+            font-size: 13px;
+            color: #666;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .terms-conditions li:last-child {
+            border-bottom: none;
+        }
+
+        .terms-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .terms-checkbox:hover {
+            border-color: var(--primary);
+            background: #f5f5ff;
+        }
+
+        .terms-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .terms-checkbox label {
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .btn {
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            text-align: center;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            flex-wrap: wrap;
+        }
+
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 5px;
+            border: 2px solid;
+        }
+
+        .legend-box.available {
+            background: #e8f5e9;
+            border-color: var(--success);
+        }
+
+        .legend-box.occupied {
+            background: #fee2e2;
+            border-color: var(--danger);
+        }
+
+        .legend-box.maintenance {
+            background: #fff3e0;
+            border-color: var(--warning);
+        }
+
+        .legend-box.selected {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-color: var(--primary);
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 30px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .footer {
+            background: #2d3748;
+            margin-top: 40px;
+            padding: 30px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+            color: #e2e8f0;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 25px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+        }
+
+        .footer-section h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #f7fafc;
+            font-weight: 700;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section li {
+            margin-bottom:
+        10px;
+        }
+
+        .footer-section a {
+            color: #cbd5e0;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: #6366f1;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 20px;
+            border-top: 1px solid #4a5568;
+            font-size: 13px;
+            color: #a0aec0;
+        }
+
+        .custom-popup {
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .custom-popup h4 {
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+
+        .custom-popup .popup-stats {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 10px 0;
+            font-size: 13px;
+        }
+
+        .custom-popup .popup-distance {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-weight: 700;
+            margin: 10px 0;
+            display: inline-block;
+        }
+
+        .custom-popup button {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .right-panel {
+                position: static;
+            }
+
+            .vehicle-type-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            #map {
+                height: 350px;
+            }
+
+            .map-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-destination {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-center {
+                display: none;
+            }
+
+            .stepper {
+                overflow-x: scroll;
+            }
+
+            .vehicle-type-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .duration-selector {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{% url 'home' %}" class="logo">
+                <div class="logo-icon">🚗</div>
+                <div class="logo-text">
+                    <h1>Parkease</h1>
+                    <p class="tagline">Pune Smart Parking Solutions</p>
+                </div>
+            </a>
+            <ul class="nav-center">
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'park_vehicle' %}" class="active">Book Parking</a></li>
+                <li><a href="{% url 'monthly_pass' %}">Monthly Pass</a></li>
+                <li><a href="{% url 'user_profile' %}">My Bookings</a></li>
+                <li><a href="{% url 'contact' %}">Contact</a></li>
+            </ul>
+            {% if user.is_authenticated %}
+            <a href="{% url 'user_logout' %}" class="btn-logout">Logout</a>
+            {% else %}
+            <a href="{% url 'user_login' %}" class="btn-logout" style="background: linear-gradient(135deg, var(--success), #059669);">Login</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>🗺️ Find & Book Parking</h1>
+            <p>Find nearest parking on map or follow 7-step booking process</p>
+        </div>
+
+        <!-- MAP SECTION -->
+        <div class="map-section">
+            <div class="map-header">
+                <div class="map-title">
+                    📍 Interactive Parking Map
+                </div>
+                
+                <div class="search-destination">
+                    <input 
+                        type="text" 
+                        id="destinationInput" 
+                        placeholder="🔍 Search destination (Mall, Hospital, College...)"
+                        autocomplete="off"
+                    >
+                    <button class="search-btn" onclick="searchDestination()">Search</button>
+                </div>
+
+                <div class="map-controls">
+                    <button class="map-btn active" id="btnNearMe" onclick="showNearMe()">
+                        📍 Near Me
+                    </button>
+                    <button class="map-btn" onclick="resetMap()">
+                        🔄 Reset
+                    </button>
+                </div>
+            </div>
+
+            <div id="map"></div>
+
+            <div class="map-legend">
+                <div class="legend-item">
+                    <div class="legend-color legend-blue"></div>
+                    <span>Your Location</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color legend-yellow"></div>
+                    <span>Destination</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color legend-green"></div>
+                    <span>Available Parking</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color legend-red"></div>
+                    <span>Full Parking</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MONTHLY PASS BANNER -->
+        {% if active_passes %}
+        <div class="monthly-pass-banner">
+            <div class="pass-header">
+                <div class="pass-header-left">
+                    <div class="pass-icon">🎫</div>
+                    <div>
+                        <h3 style="margin: 0 0 5px 0; font-size: 28px; font-weight: 800;">✅ Monthly Pass Active!</h3>
+                        <p style="margin: 0; font-size: 15px; opacity: 0.9;">Your parking will be FREE with these passes</p>
+                    </div>
+                </div>
+                <div class="pass-badge">
+                    🎉 UNLIMITED ACCESS
+                </div>
+            </div>
+            
+            <div class="pass-grid">
+                {% for pass in active_passes %}
+                <div class="pass-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div style="font-size: 32px;">
+                            {% if pass.vehicle.vehicle_type == 'car' %}🚗
+                            {% elif pass.vehicle.vehicle_type == 'bike' %}🏍️
+                            {% elif pass.vehicle.vehicle_type == 'ev' %}⚡
+                            {% else %}🛺{% endif %}
+                        </div>
+                        <div style="background: rgba(255, 255, 255, 0.3); padding: 5px 12px; border-radius: 15px; font-size: 11px; font-weight: 700;">
+                            {{ pass.pass_type.name }}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <p style="margin: 0 0 5px 0; font-size: 13px; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.5px;">Vehicle</p>
+                        <p style="margin: 0 0 12px 0; font-size: 20px; font-weight: 800; letter-spacing: 1px;">{{ pass.vehicle.license_plate }}</p>
+                        
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <div style="flex: 1; background: rgba(255, 255, 255, 0.15); padding: 8px; border-radius: 8px; text-align: center;">
+                                <p style="margin: 0; font-size: 11px; opacity: 0.85;">Pass ID</p>
+                                <p style="margin: 0; font-size: 13px; font-weight: 700;">{{ pass.pass_number }}</p>
+                            </div>
+                            <div style="flex: 1; background: rgba(255, 255, 255, 0.15); padding: 8px; border-radius: 8px; text-align: center;">
+                                <p style="margin: 0; font-size: 11px; opacity: 0.85;">Valid Until</p>
+                                <p style="margin: 0; font-size: 13px; font-weight: 700;">{{ pass.end_date|date:"d M Y" }}</p>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(255, 255, 255, 0.15); padding: 10px; border-radius: 8px; text-align: center;">
+                            {% with days_left=pass.days_until_expiry %}
+                            {% if days_left > 7 %}
+                            <p style="margin: 0; font-size: 12px; font-weight: 600;">✅ {{ days_left }} days remaining</p>
+                            {% elif days_left > 0 %}
+                            <p style="margin: 0; font-size: 12px; font-weight: 600;">⚠️ Expires in {{ days_left }} days</p>
+                            {% else %}
+                            <p style="margin: 0; font-size: 12px; font-weight: 600;">🔴 Expired</p>
+                            {% endif %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div style="margin-top: 20px; padding: 15px; background: rgba(255, 255, 255, 0.15); border-radius: 10px; backdrop-filter: blur(10px);">
+                <p style="margin: 0 0 10px 0; font-size: 14px; font-weight: 700;">🎁 Active Benefits:</p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; font-size: 13px;">
+                    <p style="margin: 0;">✅ FREE unlimited parking</p>
+                    <p style="margin: 0;">✅ No time restrictions</p>
+                    <p style="margin: 0;">✅ Skip payment process</p>
+                    <p style="margin: 0;">✅ Priority exit lanes</p>
+                </div>
+            </div>
+            
+            <p style="margin: 15px 0 0 0; font-size: 14px; opacity: 0.9; text-align: center;">
+                🎉 <strong>Book your parking now and enjoy FREE entry & exit!</strong> No payment required.
+            </p>
+        </div>
+        {% endif %}
+
+        <!-- STEPPER -->
+        <div class="stepper">
+            <div class="step active" id="stepIndicator1">
+                <div class="step-circle">1</div>
+                <div class="step-label">Vehicle</div>
+            </div>
+            <div class="step" id="stepIndicator2">
+                <div class="step-circle">2</div>
+                <div class="step-label">Location</div>
+            </div>
+            <div class="step" id="stepIndicator3">
+                <div class="step-circle">3</div>
+                <div class="step-label">Area</div>
+            </div>
+            <div class="step" id="stepIndicator4">
+                <div class="step-circle">4</div>
+                <div class="step-label">Floor</div>
+            </div>
+            <div class="step" id="stepIndicator5">
+                <div class="step-circle">5</div>
+                <div class="step-label">Block</div>
+            </div>
+            <div class="step" id="stepIndicator6">
+                <div class="step-circle">6</div>
+                <div class="step-label">Slot</div>
+            </div>
+            <div class="step" id="stepIndicator7">
+                <div class="step-circle">7</div>
+                <div class="step-label">Confirm</div>
+            </div>
+        </div>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <div id="messageContainer"></div>
+
+        <!-- Hidden landmark data -->
+        <div style="display: none;" id="landmarkData">
+            {% if parking_lots %}
+                {% for lot in parking_lots %}
+                    {% for landmark in lot.landmarks.all %}
+                    <div class="landmark-card" data-lot-id="{{ lot.id }}" onclick="selectArea(this, {{ landmark.id }}, '{{ landmark.name|escapejs }}')">
+                        <div class="icon">{{ landmark.icon }}</div>
+                        <div class="name">{{ landmark.name }}</div>
+                        <div class="stats">
+                            <span style="font-size: 11px;">📏 {{ landmark.distance_km }} km</span><br>
+                            <span style="font-size: 11px;">🚶 {{ landmark.walking_time }} min</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <form method="POST" id="parkingForm">
+            {% csrf_token %}
+
+            <div class="main-grid">
+                <div class="left-panel">
+                    <!-- Step 1: Vehicle Details -->
+                    <div class="step-card">
+                        <div class="step-header">
+                            <div class="step-number">1</div>
+                            <h2 class="step-title">🚗 Vehicle Details</h2>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label>Vehicle Type <span class="required">*</span></label>
+                            <div class="vehicle-type-grid">
+                                {% for rule in pricing_rules %}
+                                <div class="vehicle-type-card {% if forloop.first %}selected{% endif %}" 
+                                     onclick="selectVehicleType(this, '{{ rule.vehicle_type }}', {{ rule.rate_per_hour }})">
+                                    <div class="icon">
+                                        {% if rule.vehicle_type == 'car' %}🚗
+                                        {% elif rule.vehicle_type == 'bike' %}🏍️
+                                        {% elif rule.vehicle_type == 'ev' %}⚡
+                                        {% elif rule.vehicle_type == '3w' %}🛺
+                                        {% else %}🚗{% endif %}
+                                    </div>
+                                    <div class="name">{{ rule.get_vehicle_type_display }}</div>
+                                    <div class="price">₹{{ rule.rate_per_hour }}/hr</div>
+                                </div>
+                                {% empty %}
+                                <div class="vehicle-type-card selected" onclick="selectVehicleType(this, 'bike', 10)">
+                                    <div class="icon">🏍️</div>
+                                    <div class="name">2 Wheeler</div>
+                                    <div class="price">₹10/hr</div>
+                                </div>
+                                <div class="vehicle-type-card" onclick="selectVehicleType(this, 'car', 20)">
+                                    <div class="icon">🚗</div>
+                                    <div class="name">4 Wheeler</div>
+                                    <div class="price">₹20/hr</div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <input type="hidden" name="vehicle_type" id="vehicleType" value="{% if pricing_rules %}{{ pricing_rules.0.vehicle_type }}{% else %}bike{% endif %}" required>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>🔢 Vehicle Number <span class="required">*</span></label>
+                                <input type="text" name="license_plate" id="licensePlate" 
+                                       placeholder="MH12AB1234" required 
+                                       style="text-transform: uppercase;">
+                            </div>
+                            <div class="form-group">
+                                <label>👤 Owner Name</label>
+                                <input type="text" name="owner_name" 
+                                       placeholder="Your name" 
+                                       value="{{ user.username }}" 
+                                       readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Select Location -->
+                    <div class="step-card" id="locationSection">
+                        <div class="step-header">
+                            <div class="step-number">2</div>
+                            <h2 class="step-title">📍 Select Parking Location</h2>
+                        </div>
+
+                        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                            ✔️ Choose from map or select below
+                        </p>
+
+                        <div class="landmark-grid" id="locationGrid">
+                            {% if parking_lots %}
+                                {% for lot in parking_lots %}
+                                <div class="landmark-card" onclick="selectLocation(this, {{ lot.id }}, '{{ lot.name|escapejs }}')">
+                                    <div class="icon">🅿️</div>
+                                    <div class="name">{{ lot.name }}</div>
+                                    <div class="stats">
+                                        <span style="color: var(--success);">🟢 {{ lot.available_count }}</span> / 
+                                        <span>{{ lot.total_slots }} slots</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="empty-state" style="grid-column: 1/-1;">
+                                    <div class="icon">⚠️</div>
+                                    <p>No parking locations available</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <input type="hidden" name="parking_lot" id="parkingLotId" required>
+                    </div>
+
+                    <!-- Step 3: Select Area/Landmark -->
+                    <div class="step-card disabled" id="landmarkSection">
+                        <div class="step-header">
+                            <div class="step-number">3</div>
+                            <h2 class="step-title">🗺️ Select Nearby Area/Landmark</h2>
+                        </div>
+
+                        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                            ✔️ Choose a nearby landmark for reference
+                        </p>
+
+                        <div id="landmarkContent">
+                            <div class="empty-state">
+                                <div class="icon">⬆️</div>
+                                <p>Please select a parking location first</p>
+                            </div>
+                        </div>
+                        <input type="hidden" name="landmark" id="landmarkId">
+                    </div>
+
+                    <!-- Step 4: Select Floor -->
+                    <div class="step-card disabled" id="floorSection">
+                        <div class="step-header">
+                            <div class="step-number">4</div>
+                            <h2 class="step-title">🏢 Select Floor</h2>
+                        </div>
+
+                        <div id="floorContent">
+                            <div class="empty-state">
+                                <div class="icon">⬆️</div>
+                                <p>Please select a location first</p>
+                            </div>
+                        </div>
+                        <input type="hidden" name="floor" id="floorId">
+                    </div>
+
+                    <!-- Step 5: Select Block -->
+                    <div class="step-card disabled" id="blockSection">
+                        <div class="step-header">
+                            <div class="step-number">5</div>
+                            <h2 class="step-title">🔲 Select Block</h2>
+                        </div>
+
+                        <div id="blockContent">
+                            <div class="empty-state">
+                                <div class="icon">⬆️</div>
+                                <p>Please select a floor first</p>
+                            </div>
+                        </div>
+                        <input type="hidden" name="block" id="blockId">
+                    </div>
+
+                    <!-- Step 6: Select Slot -->
+                    <div class="step-card disabled" id="slotSection">
+                        <div class="step-header">
+                            <div class="step-number">6</div>
+                            <h2 class="step-title">🅿️ Select Parking Slot</h2>
+                        </div>
+
+                        <div class="legend">
+                            <div class="legend-item">
+                                <div class="legend-box available"></div>
+                                <span>Available</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-box occupied"></div>
+                                <span>Occupied</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-box maintenance"></div>
+                                <span>Maintenance</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-box selected"></div>
+                                <span>Selected</span>
+                            </div>
+                        </div>
+
+                        <div id="slotContent">
+                            <div class="empty-state">
+                                <div class="icon">⬆️</div>
+                                <p>Please select a block first</p>
+                            </div>
+                        </div>
+                        <input type="hidden" name="slot_id" id="slotId" required>
+                    </div>
+
+                    <!-- Step 7: Duration & Confirm -->
+                    <div class="step-card disabled" id="confirmSection">
+                        <div class="step-header">
+                            <div class="step-number">7</div>
+                            <h2 class="step-title">🕐 Choose Duration & Confirm</h2>
+                        </div>
+
+                        <label style="display: block; margin-bottom: 12px; font-weight: 600; font-size: 14px;">⏱️ Choose Parking Duration:</label>
+                        <div class="duration-selector">
+                            <div class="duration-option selected" onclick="selectDuration(this, 1)">
+                                <div class="time">1 Hour</div>
+                                <div class="price" id="price1">₹10</div>
+                            </div>
+                            <div class="duration-option" onclick="selectDuration(this, 2)">
+                                <div class="time">2 Hours</div>
+                                <div class="price" id="price2">₹20</div>
+                            </div>
+                            <div class="duration-option" onclick="selectDuration(this, 4)">
+                                <div class="time">4 Hours</div>
+                                <div class="price" id="price4">₹40</div>
+                            </div>
+                            <div class="duration-option" onclick="selectDuration(this, 8)">
+                                <div class="time">8 Hours</div>
+                                <div class="price" id="price8">₹80</div>
+                            </div>
+                            <div class="duration-option" onclick="selectDuration(this, 12)">
+                                <div class="time">12 Hours</div>
+                                <div class="price" id="price12">₹120</div>
+                            </div>
+                            <div class="duration-option" onclick="selectDuration(this, 24)">
+                                <div class="time">24 Hours</div>
+                                <div class="price" id="price24">₹240</div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="duration_hours" id="durationHours" value="1">
+
+                        <div class="custom-time-picker">
+                            <h4>📅 Or Select Custom Date & Time:</h4>
+                            <div class="time-row">
+                                <div class="time-input-group">
+                                    <label>From:</label>
+                                    <input type="datetime-local" id="customFrom" onchange="calculateCustomDuration()">
+                                </div>
+                                <div class="time-input-group">
+                                    <label>To:</label>
+                                    <input type="datetime-local" id="customTo" onchange="calculateCustomDuration()">
+                                </div>
+                            </div>
+                            <div id="customDurationDisplay" style="margin-top: 10px; font-size: 13px; font-weight: 600; color: var(--primary);"></div>
+                        </div>
+
+                        <div class="terms-conditions">
+                            <h4>📋 Terms & Conditions:</h4>
+                            <ul>
+                                <li>✅ Vehicle must be parked within 30 minutes of booking</li>
+                                <li>⚠️ Overtime charges: ₹50/hour after booked duration</li>
+                                <li>🔒 Parking lot is not responsible for theft or damage</li>
+                                <li>🚫 No refunds after entry into parking area</li>
+                                <li>♿ Disabled parking spots require valid permit</li>
+                                <li>⚡ EV charging available at additional cost</li>
+                                <li>🚗 Vehicle must match the registered license plate</li>
+                                <li>📱 QR code/receipt must be presented at exit</li>
+                                <li>🧹 Keep parking area clean and organized</li>
+                                <li>📞 Contact support for any issues: 9359845632</li>
+                            </ul>
+                        </div>
+
+                        <div class="terms-checkbox">
+                            <input type="checkbox" id="acceptTerms" name="accept_terms" required>
+                            <label for="acceptTerms">I agree to the Terms & Conditions and Privacy Policy <span class="required">*</span></label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Booking Summary -->
+                <div class="right-panel">
+                    <div class="booking-summary">
+                        <div class="summary-title">📋 Booking Summary</div>
+
+                        <div class="summary-item">
+                            <span class="summary-label">Vehicle Type:</span>
+                            <span class="summary-value" id="summaryVehicleType">
+                                {% if pricing_rules %}{{ pricing_rules.0.get_vehicle_type_display }}{% else %}2 Wheeler{% endif %}
+                            </span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Vehicle No:</span>
+                            <span class="summary-value" id="summaryVehicleNo">Not entered</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Location:</span>
+                            <span class="summary-value" id="summaryLocation">—</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Area:</span>
+                            <span class="summary-value" id="summaryArea">—</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Floor:</span>
+                            <span class="summary-value" id="summaryFloor">—</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Block:</span>
+                            <span class="summary-value" id="summaryBlock">—</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Slot:</span>
+                            <span class="summary-value" id="summarySlot">—</span>
+                        </div>
+
+                        <div class="cost-calculator">
+                            <div class="cost-row">
+                                <span>Base Rate:</span>
+                                <span id="baseRate">₹{% if pricing_rules %}{{ pricing_rules.0.rate_per_hour }}{% else %}10{% endif %}/hr</span>
+                            </div>
+                            <div class="cost-row">
+                                <span>Duration:</span>
+                                <span id="durationDisplay">1 hour</span>
+                            </div>
+                            <div class="cost-row">
+                                <span>Subtotal:</span>
+                                <span id="subtotal">₹{% if pricing_rules %}{{ pricing_rules.0.rate_per_hour }}{% else %}10{% endif %}</span>
+                            </div>
+                            <div class="total-cost">
+                                <span>Total Amount:</span>
+                                <span id="totalCost">₹{% if pricing_rules %}{{ pricing_rules.0.rate_per_hour }}{% else %}10{% endif %}</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                            🔒 Complete All Steps to Book
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>🚗 About Us</h3>
+                <ul>
+                    <li><a href="#">About Company</a></li>
+                    <li><a href="#">Our Mission</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Press Release</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>🅿️ Services</h3>
+                <ul>
+                    <li><a href="{% url 'park_vehicle' %}">Book Parking</a></li>
+                    <li><a href="{% url 'monthly_pass' %}">Monthly Pass</a></li>
+                    <li><a href="#">Corporate Parking</a></li>
+                    <li><a href="#">Event Parking</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>📞 Support</h3>
+                <ul>
+                    <li><a href="{% url 'contact' %}">Contact Us</a></li>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">FAQs</a></li>
+                    <li><a href="#">Report Issue</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>⚖️ Legal</h3>
+                <ul>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Refund Policy</a></li>
+                    <li><a href="#">Cookie Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 Parkease. All Rights Reserved. | Powered by Vehile Parking System </p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // MAP FUNCTIONALITY
+        // MAP FUNCTIONALITY
+let map;
+let userLocation = null;
+let destinationLocation = null;
+let parkingMarkers = [];
+let userMarker = null;
+let destinationMarker = null;
+
+// ✅ DYNAMIC PARKING DATA FROM API
+let parkingData = [];
+
+async function loadParkingData() {
+    try {
+        const response = await fetch('/api/parking-lots-stats/');
+        if (!response.ok) throw new Error('API request failed');
+        parkingData = await response.json();
+        console.log('✅ Loaded parking data:', parkingData);
+    } catch (error) {
+        console.error('❌ Error loading parking data:', error);
+        // Fallback to template data
+        parkingData = [
+            {% if parking_lots %}
+                {% for lot in parking_lots %}
+                {
+                    id: {{ lot.id }},
+                    name: "{{ lot.name|escapejs }}",
+                    address: "{{ lot.address|escapejs }}",
+                    lat: {% if lot.latitude %}{{ lot.latitude }}{% else %}18.5204 + (Math.random() * 0.05 - 0.025){% endif %},
+                    lng: {% if lot.longitude %}{{ lot.longitude }}{% else %}73.8567 + (Math.random() * 0.05 - 0.025){% endif %},
+                    available: {{ lot.available_count|default:0 }},
+                    total: {{ lot.total_slots|default:0 }}
+                }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            {% else %}
+                {id: 1, name: "Sample Parking", address: "Pune", lat: 18.5204, lng: 73.8567, available: 20, total: 50}
+            {% endif %}
+        ];
+    }
+}
+
+async function initMap() {
+    // ✅ First load parking data
+    await loadParkingData();
+    
+    map = L.map('map').setView([18.5204, 73.8567], 13);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+        maxZoom: 19
+    }).addTo(map);
+
+    getUserLocation();
+}
+
+        function getUserLocation() {
+            showLoading();
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        
+                        if (userMarker) map.removeLayer(userMarker);
+                        
+                        const blueIcon = L.divIcon({
+                            className: 'custom-div-icon',
+                            html: '<div style="background: #3b82f6; width: 25px; height: 25px; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);"></div>',
+                            iconSize: [25, 25],
+                            iconAnchor: [12, 12]
+                        });
+                        
+                        userMarker = L.marker([userLocation.lat, userLocation.lng], {icon: blueIcon})
+                            .addTo(map)
+                            .bindPopup('<b>📍 You are here</b>');
+                        
+                        map.setView([userLocation.lat, userLocation.lng], 14);
+                        showNearestParking(userLocation);
+                        hideLoading();
+                    },
+                    (error) => {
+                        userLocation = {lat: 18.5204, lng: 73.8567};
+                        showNearestParking(userLocation);
+                        hideLoading();
+                    }
+                );
+            } else {
+                userLocation = {lat: 18.5204, lng: 73.8567};
+                showNearestParking(userLocation);
+                hideLoading();
+            }
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function showNearestParking(fromLocation) {
+            parkingMarkers.forEach(marker => map.removeLayer(marker));
+            parkingMarkers = [];
+            
+            const parkingWithDistance = parkingData.map(parking => ({
+                ...parking,
+                distance: calculateDistance(
+                    fromLocation.lat,
+                    fromLocation.lng,
+                    parking.lat,
+                    parking.lng
+                )
+            }));
+            
+            parkingWithDistance.sort((a, b) => a.distance - b.distance);
+            
+            parkingWithDistance.forEach(parking => {
+                const isAvailable = parking.available > 0;
+                const markerColor = isAvailable ? '#10b981' : '#ef4444';
+                
+                const icon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div style="background: ${markerColor}; width: 30px; height: 30px; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 16px;">🅿️</div>`,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                });
+                
+                const popupContent = `
+                    <div class="custom-popup">
+                        <h4>${parking.name}</h4>
+                        <div class="popup-stats">
+                            <span style="color: ${isAvailable ? '#10b981' : '#ef4444'};">
+                                🟢 ${parking.available}
+                            </span>
+                            <span style="color: #64748b;">
+                                / ${parking.total} slots
+                            </span>
+                        </div>
+                        <div class="popup-distance">📏 ${parking.distance.toFixed(2)} km away</div>
+                        <button onclick="selectLocationFromMap(${parking.id}, '${parking.name}')" ${!isAvailable ? 'disabled' : ''}>
+                            ${isAvailable ? '🅿️ Select This' : '❌ Full'}
+                        </button>
+                    </div>
+                `;
+                
+                const marker = L.marker([parking.lat, parking.lng], {icon: icon})
+                    .addTo(map)
+                    .bindPopup(popupContent);
+                
+                parkingMarkers.push(marker);
+            });
+        }
+
+        async function searchDestination() {
+            const query = document.getElementById('destinationInput').value.trim();
+            
+            if (!query) {
+                alert('⚠️ Please enter a destination');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ', Pune')}&limit=1`
+                );
+                const data = await response.json();
+                
+                if (data.length > 0) {
+                    destinationLocation = {
+                        lat: parseFloat(data[0].lat),
+                        lng: parseFloat(data[0].lon),
+                        name: data[0].display_name
+                    };
+                    
+                    if (destinationMarker) {
+                        map.removeLayer(destinationMarker);
+                    }
+                    
+                    const yellowIcon = L.divIcon({
+                        className: 'custom-div-icon',
+                        html: '<div style="background: #f59e0b; width: 30px; height: 30px; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 16px;">📍</div>',
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 30]
+                    });
+                    
+                    destinationMarker = L.marker([destinationLocation.lat, destinationLocation.lng], {icon: yellowIcon})
+                        .addTo(map)
+                        .bindPopup(`<b>📍 ${destinationLocation.name}</b>`)
+                        .openPopup();
+                    
+                    map.setView([destinationLocation.lat, destinationLocation.lng], 14);
+                    showNearestParking(destinationLocation);
+                } else {
+                    alert('❌ Destination not found');
+                }
+            } catch (error) {
+                alert('❌ Search failed');
+            }
+            
+            hideLoading();
+        }
+
+        function showNearMe() {
+            if (userLocation) {
+                map.setView([userLocation.lat, userLocation.lng], 14);
+                showNearestParking(userLocation);
+                document.getElementById('destinationInput').value = '';
+                document.querySelectorAll('.map-btn').forEach(btn => btn.classList.remove('active'));
+                document.getElementById('btnNearMe').classList.add('active');
+            } else {
+                getUserLocation();
+            }
+        }
+
+        function resetMap() {
+            document.getElementById('destinationInput').value = '';
+            if (destinationMarker) {
+                map.removeLayer(destinationMarker);
+            }
+            destinationLocation = null;
+            showNearMe();
+        }
+
+        function selectLocationFromMap(locationId, locationName) {
+            const locationCards = document.querySelectorAll('#locationGrid .landmark-card');
+            locationCards.forEach(card => {
+                if (card.textContent.includes(locationName)) {
+                    card.click();
+                    document.getElementById('locationSection').scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        }
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        window.addEventListener('load', function() {
+            initMap();
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const destInput = document.getElementById('destinationInput');
+            if (destInput) {
+                destInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        searchDestination();
+                    }
+                });
+            }
+        });
+
+        // BOOKING FUNCTIONALITY
+        let bookingData = {
+            vehicleType: '{% if pricing_rules %}{{ pricing_rules.0.vehicle_type }}{% else %}bike{% endif %}',
+            vehicleRate: {% if pricing_rules %}{{ pricing_rules.0.rate_per_hour }}{% else %}10{% endif %},
+            vehicleNumber: '',
+            areaId: null,
+            areaName: '',
+            locationId: null,
+            locationName: '',
+            floorId: null,
+            floorName: '',
+            blockId: null,
+            blockName: '',
+            slotId: null,
+            slotNumber: '',
+            duration: 1
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSummary();
+            calculateTotal();
+            updateDurationPrices();
+        });
+
+        function selectVehicleType(element, type, rate) {
+            document.querySelectorAll('.vehicle-type-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            element.classList.add('selected');
+            document.getElementById('vehicleType').value = type;
+            
+            bookingData.vehicleType = type;
+            bookingData.vehicleRate = rate;
+            
+            const typeNames = {
+                'bike': '2 Wheeler',
+                'car': '4 Wheeler',
+                'ev': 'Electric Vehicle',
+                '3w': '3 Wheeler'
+            };
+            
+            document.getElementById('summaryVehicleType').textContent = typeNames[type] || type;
+            document.getElementById('baseRate').textContent = `₹${rate}/hr`;
+            
+            updateStepIndicator(1);
+            calculateTotal();
+            updateDurationPrices();
+        }
+
+        function updateDurationPrices() {
+            const rate = bookingData.vehicleRate;
+            document.getElementById('price1').textContent = `₹${rate * 1}`;
+            document.getElementById('price2').textContent = `₹${rate * 2}`;
+            document.getElementById('price4').textContent = `₹${rate * 4}`;
+            document.getElementById('price8').textContent = `₹${rate * 8}`;
+            document.getElementById('price12').textContent = `₹${rate * 12}`;
+            document.getElementById('price24').textContent = `₹${rate * 24}`;
+        }
+
+        function selectLocation(element, locationId, locationName) {
+            document.querySelectorAll('#locationGrid .landmark-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            element.classList.add('selected');
+            
+            bookingData.locationId = locationId;
+            bookingData.locationName = locationName;
+            
+            document.getElementById('parkingLotId').value = locationId;
+            document.getElementById('summaryLocation').textContent = locationName;
+            
+            loadLandmarks(locationId);
+            
+            document.getElementById('landmarkSection').classList.remove('disabled');
+            document.getElementById('floorSection').classList.add('disabled');
+            document.getElementById('blockSection').classList.add('disabled');
+            document.getElementById('slotSection').classList.add('disabled');
+            document.getElementById('confirmSection').classList.add('disabled');
+            
+            updateStepIndicator(2);
+            updateSubmitButton();
+        }
+
+        function loadLandmarks(locationId) {
+            const landmarkContent = document.getElementById('landmarkContent');
+            const hiddenLandmarks = document.querySelectorAll('#landmarkData .landmark-card[data-lot-id="' + locationId + '"]');
+            
+            if (hiddenLandmarks.length === 0) {
+                landmarkContent.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>No landmarks available</p></div>';
+                return;
+            }
+            
+            landmarkContent.innerHTML = '<div class="landmark-grid" id="landmarkGrid"></div>';
+            const landmarkGrid = landmarkContent.querySelector('#landmarkGrid');
+            
+            hiddenLandmarks.forEach(landmark => {
+                landmarkGrid.appendChild(landmark.cloneNode(true));
+            });
+        }
+
+        function selectArea(element, landmarkId, landmarkName) {
+            document.querySelectorAll('#landmarkGrid .landmark-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            element.classList.add('selected');
+            
+            bookingData.areaId = landmarkId;
+            bookingData.areaName = landmarkName;
+            
+            document.getElementById('landmarkId').value = landmarkId;
+            document.getElementById('summaryArea').textContent = landmarkName;
+            
+            loadFloors(bookingData.locationId);
+            
+            document.getElementById('floorSection').classList.remove('disabled');
+            document.getElementById('blockSection').classList.add('disabled');
+            document.getElementById('slotSection').classList.add('disabled');
+            document.getElementById('confirmSection').classList.add('disabled');
+            
+            updateStepIndicator(3);
+            updateSubmitButton();
+        }
+
+        async function loadFloors(locationId) {
+            try {
+                const floorContent = document.getElementById('floorContent');
+                floorContent.innerHTML = '<div class="loading-spinner"></div>';
+                
+                const response = await fetch(`/api/parking/floors/${locationId}/`);
+                const floors = await response.json();
+                
+                if (floors.length === 0) {
+                    floorContent.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>No floors available</p></div>';
+                    return;
+                }
+                
+                floorContent.innerHTML = '<div class="floor-grid"></div>';
+                const floorGrid = floorContent.querySelector('.floor-grid');
+                
+                floors.forEach(floor => {
+                    const option = document.createElement('div');
+                    option.className = 'floor-option';
+                    option.textContent = floor.name;
+                    option.onclick = () => selectFloor(option, floor.id, floor.name);
+                    floorGrid.appendChild(option);
+                });
+            } catch (error) {
+                document.getElementById('floorContent').innerHTML = '<div class="empty-state"><div class="icon">❌</div><p>Failed to load</p></div>';
+            }
+        }
+
+        async function selectFloor(element, floorId, floorName) {
+            document.querySelectorAll('.floor-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            
+            bookingData.floorId = floorId;
+            bookingData.floorName = floorName;
+            
+            document.getElementById('floorId').value = floorId;
+            document.getElementById('summaryFloor').textContent = floorName;
+            
+            await loadBlocks(floorId);
+            
+            document.getElementById('blockSection').classList.remove('disabled');
+            document.getElementById('slotSection').classList.add('disabled');
+            document.getElementById('confirmSection').classList.add('disabled');
+            
+            updateStepIndicator(4);
+            updateSubmitButton();
+        }
+
+        async function loadBlocks(floorId) {
+            try {
+                const blockContent = document.getElementById('blockContent');
+                blockContent.innerHTML = '<div class="loading-spinner"></div>';
+                
+                const response = await fetch(`/api/parking/blocks/${floorId}/`);
+                const blocks = await response.json();
+                
+                if (blocks.length === 0) {
+                    blockContent.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>No blocks available</p></div>';
+                    return;
+                }
+                
+                blockContent.innerHTML = '<div class="floor-grid"></div>';
+                const blockGrid = blockContent.querySelector('.floor-grid');
+                
+                blocks.forEach(block => {
+                    const option = document.createElement('div');
+                    option.className = 'floor-option';
+                    option.textContent = block.name;
+                    option.onclick = () => selectBlock(option, block.id, block.name);
+                    blockGrid.appendChild(option);
+                });
+            } catch (error) {
+                document.getElementById('blockContent').innerHTML = '<div class="empty-state"><div class="icon">❌</div><p>Failed to load</p></div>';
+            }
+        }
+
+        async function selectBlock(element, blockId, blockName) {
+            document.querySelectorAll('#blockContent .floor-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            
+            bookingData.blockId = blockId;
+            bookingData.blockName = blockName;
+            
+            document.getElementById('blockId').value = blockId;
+            document.getElementById('summaryBlock').textContent = blockName;
+            
+            await loadSlots(bookingData.locationId, bookingData.floorId, blockId);
+            
+            document.getElementById('slotSection').classList.remove('disabled');
+            document.getElementById('confirmSection').classList.add('disabled');
+            
+            updateStepIndicator(5);
+            updateSubmitButton();
+        }
+
+        async function loadSlots(locationId, floorId, blockId) {
+            try {
+                const slotContent = document.getElementById('slotContent');
+                slotContent.innerHTML = '<div class="loading-spinner"></div>';
+                
+                const response = await fetch(`/api/parking/slots/?location=${locationId}&floor=${floorId}&block=${blockId}`);
+                const slots = await response.json();
+                
+                if (slots.length === 0) {
+                    slotContent.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>No slots available</p></div>';
+                    return;
+                }
+                
+                slotContent.innerHTML = '<div class="slots-grid"></div>';
+                const slotsGrid = slotContent.querySelector('.slots-grid');
+                
+                slots.forEach(slot => {
+                    const card = document.createElement('div');
+                    card.className = `slot-card ${slot.status}`;
+                    
+                    let statusIcon = '🟢';
+                    if (slot.status === 'occupied') statusIcon = '🔴';
+                    else if (slot.status === 'maintenance') statusIcon = '🔧';
+                    
+                    card.innerHTML = `
+                        <div class="slot-number">${slot.slot_number}</div>
+                        <div style="font-size: 20px;">${statusIcon}</div>
+                    `;
+                    
+                    if (slot.status === 'available') {
+                        card.onclick = () => selectSlot(card, slot.id, slot.slot_number);
+                    }
+                    
+                    slotsGrid.appendChild(card);
+                });
+            } catch (error) {
+                document.getElementById('slotContent').innerHTML = '<div class="empty-state"><div class="icon">❌</div><p>Failed to load</p></div>';
+            }
+        }
+
+        function selectSlot(element, slotId, slotNumber) {
+            document.querySelectorAll('.slot-card').forEach(card => card.classList.remove('selected'));
+            element.classList.add('selected');
+            
+            bookingData.slotId = slotId;
+            bookingData.slotNumber = slotNumber;
+            
+            document.getElementById('slotId').value = slotId;
+            document.getElementById('summarySlot').textContent = slotNumber;
+            
+            document.getElementById('confirmSection').classList.remove('disabled');
+            
+            updateStepIndicator(6);
+            updateSubmitButton();
+        }
+
+        function selectDuration(element, hours) {
+            document.querySelectorAll('.duration-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            
+            bookingData.duration = hours;
+            document.getElementById('durationHours').value = hours;
+            document.getElementById('durationDisplay').textContent = `${hours} hour${hours > 1 ? 's' : ''}`;
+            
+            document.getElementById('customFrom').value = '';
+            document.getElementById('customTo').value = '';
+            document.getElementById('customDurationDisplay').textContent = '';
+            
+            calculateTotal();
+            updateStepIndicator(7);
+        }
+
+        function calculateCustomDuration() {
+            const from = document.getElementById('customFrom').value;
+            const to = document.getElementById('customTo').value;
+            
+            if (from && to) {
+                const hours = Math.ceil((new Date(to) - new Date(from)) / (1000 * 60 * 60));
+                
+                if (hours > 0) {
+                    document.querySelectorAll('.duration-option').forEach(opt => opt.classList.remove('selected'));
+                    
+                    bookingData.duration = hours;
+                    document.getElementById('durationHours').value = hours;
+                    document.getElementById('durationDisplay').textContent = `${hours} hour${hours > 1 ? 's' : ''}`;
+                    document.getElementById('customDurationDisplay').textContent = `✅ ${hours} hours selected`;
+                    
+                    calculateTotal();
+                    updateStepIndicator(7);
+                }
+            }
+        }
+
+        function calculateTotal() {
+            const total = bookingData.vehicleRate * bookingData.duration;
+            document.getElementById('subtotal').textContent = `₹${total}`;
+            document.getElementById('totalCost').textContent = `₹${total}`;
+        }
+
+        function updateSummary() {
+            const vehicleNumber = document.getElementById('licensePlate').value;
+            document.getElementById('summaryVehicleNo').textContent = vehicleNumber || 'Not entered';
+            updateSubmitButton();
+        }
+
+        function updateStepIndicator(step) {
+            for (let i = 1; i <= 7; i++) {
+                const indicator = document.getElementById(`stepIndicator${i}`);
+                if (i < step) {
+                    indicator.classList.add('completed');
+                    indicator.classList.remove('active');
+                } else if (i === step) {
+                    indicator.classList.add('active');
+                    indicator.classList.remove('completed');
+                } else {
+                    indicator.classList.remove('active', 'completed');
+                }
+            }
+        }
+
+        function updateSubmitButton() {
+            const submitBtn = document.getElementById('submitBtn');
+            const vehicleNumber = document.getElementById('licensePlate').value.trim();
+            const termsAccepted = document.getElementById('acceptTerms').checked;
+            
+            const allSelected = vehicleNumber && bookingData.areaId && bookingData.locationId && 
+                              bookingData.floorId && bookingData.blockId && bookingData.slotId && termsAccepted;
+            
+            if (allSelected) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = `✅ Confirm & Pay ${document.getElementById('totalCost').textContent}`;
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.textContent = termsAccepted ? '🔒 Complete All Steps' : '⚠️ Accept Terms';
+            }
+        }
+
+        function showMessage(text, type) {
+            const container = document.getElementById('messageContainer');
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            container.appendChild(message);
+            setTimeout(() => message.remove(), 5000);
+        }
+
+        document.getElementById('parkingForm').addEventListener('submit', function(e) {
+            if (!bookingData.slotId || !document.getElementById('acceptTerms').checked) {
+                e.preventDefault();
+                showMessage('⚠️ Complete all steps!', 'error');
+                return;
+            }
+            
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').textContent = '⏳ Processing...';
+        });
+
+        document.getElementById('licensePlate').addEventListener('input', updateSummary);
+        document.getElementById('acceptTerms').addEventListener('change', updateSubmitButton);
+    </script>
+</body>
+</html>

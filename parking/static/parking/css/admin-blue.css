@@ -1,0 +1,39 @@
+/* Body & background */
+body, .module, .change-form, .submit-row {
+    background-color: #f9faff; /* very light blue */
+    color: #1a1a1a;
+}
+
+/* Header */
+#header {
+    background-color: #0d6efd; /* bootstrap primary blue */
+    color: white;
+}
+
+/* Navigation sidebar */
+#nav-sidebar {
+    background-color: #e7f0ff; /* light blue sidebar */
+}
+
+/* Links */
+a {
+    color: #0d6efd;
+}
+
+/* Buttons */
+button, input[type="submit"], .btn {
+    background-color: #0d6efd;
+    color: white;
+    border-radius: 5px;
+    border: none;
+}
+
+/* Table headers */
+table th {
+    background-color: #cfe2ff; /* light blue */
+}
+
+/* Hover effect */
+tr:hover {
+    background-color: #e2e6ea;
+}

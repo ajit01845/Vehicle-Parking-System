@@ -1,0 +1,1208 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Parkease</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --light: #f8fafc;
+            --dark: #1e293b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 10px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .logo-icon { font-size: 32px; }
+
+        .logo-text h1 {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .logo-text .tagline {
+            font-size: 11px;
+            color: #64748b;
+        }
+        
+        .nav-center {
+            display: flex;
+            gap: 5px;
+            list-style: none;
+        }
+
+        .nav-center a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 600;
+            padding: 8px 15px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+
+        .nav-center a:hover, .nav-center a.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-logout {
+            background: linear-gradient(135deg, var(--danger), #dc2626);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px 25px;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        .page-header p {
+            font-size: 15px;
+            opacity: 0.95;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+        }
+
+        .profile-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 85px;
+            height: fit-content;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            margin: 0 auto 20px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .profile-info {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .profile-email {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .profile-role {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        .section-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .active-booking {
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+            border-left: 5px solid var(--warning);
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .active-badge {
+            background: var(--success);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .booking-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .booking-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .booking-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .booking-value {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .qr-section {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 20px;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .qr-code-box {
+            width: 200px;
+            height: 200px;
+            background: white;
+            border: 3px solid var(--primary);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .vehicle-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .vehicle-card {
+            background: var(--light);
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .vehicle-card:hover {
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .vehicle-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .vehicle-icon {
+            font-size: 40px;
+        }
+
+        .vehicle-details h4 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .vehicle-details p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .vehicle-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+        }
+
+        .icon-btn.edit {
+            background: var(--primary);
+            color: white;
+        }
+
+        .icon-btn.delete {
+            background: var(--danger);
+            color: white;
+        }
+
+        .icon-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .history-table th {
+            background: var(--light);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #e0e0e0;
+            font-size: 14px;
+        }
+
+        .history-table td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+
+        .history-table tr:hover {
+            background: var(--light);
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-completed {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-active {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .toast {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            z-index: 99999;
+            animation: slideInRight 0.3s;
+            display: none;
+            min-width: 300px;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .toast.success { border-left: 5px solid var(--success); }
+        .toast.error { border-left: 5px solid var(--danger); }
+        .toast.info { border-left: 5px solid var(--primary); }
+
+        .footer {
+            background: #2d3748;
+            margin-top: 40px;
+            padding: 30px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+            color: #e2e8f0;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 25px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+        }
+
+        .footer-section h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #f7fafc;
+            font-weight: 700;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section li {
+            margin-bottom: 10px;
+        }
+
+        .footer-section a {
+            color: #cbd5e0;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: #6366f1;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 20px;
+            border-top: 1px solid #4a5568;
+            font-size: 13px;
+            color: #a0aec0;
+        }
+
+        @media (max-width: 1024px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-card {
+                position: static;
+            }
+
+            .booking-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-center {
+                display: none;
+            }
+
+            .booking-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .qr-section {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="toast" id="toast">
+        <span id="toastMessage"></span>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{% url 'home' %}" class="logo">
+                <div class="logo-icon">🚗</div>
+                <div class="logo-text">
+                    <h1>Parkease</h1>
+                    <p class="tagline">Pune Smart Parking Solutions</p>
+                </div>
+            </a>
+            <ul class="nav-center">
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'park_vehicle' %}">Book Parking</a></li>
+                <li><a href="{% url 'monthly_pass' %}">Monthly Pass</a></li>
+                <li><a href="{% url 'user_profile' %}" class="active">My Profile</a></li>
+                <li><a href="{% url 'contact' %}">Contact</a></li>
+            </ul>
+            {% if user.is_authenticated %}
+            <a href="{% url 'user_logout' %}" class="btn-logout">Logout</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>👤 My Profile</h1>
+            <p>Manage your account, vehicles, and parking history</p>
+        </div>
+
+        <div class="profile-grid">
+            <div>
+                <div class="profile-card">
+                    <div class="profile-avatar">
+                        {{ user.first_name.0|upper|default:'U' }}{{ user.last_name.0|upper|default:'' }}
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-name">{{ user.get_full_name|default:user.username }}</div>
+                        <div class="profile-email">📧 {{ user.email }}</div>
+                        <span class="profile-role">{% if user.is_staff %}Admin{% else %}User{% endif %}</span>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-number">{{ total_bookings }}</div>
+                            <div class="stat-label">Total Bookings</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">{{ active_bookings }}</div>
+                            <div class="stat-label">Active</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">₹{{ total_spent }}</div>
+                            <div class="stat-label">Total Spent</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">{{ total_hours }}h</div>
+                            <div class="stat-label">Total Hours</div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="openEditProfileModal()">
+                        ✏️ Edit Profile
+                    </button>
+                </div>
+
+                <div class="profile-card" style="margin-top: 20px;">
+                    <h3 style="margin-bottom: 15px;">⚡ Quick Actions</h3>
+                    <a href="{% url 'park_vehicle' %}" class="btn btn-primary">
+                        🚗 Book Parking
+                    </a>
+                    {% if active_booking %}
+                    <a href="{% url 'exit_parking' active_booking.id %}" class="btn btn-secondary">
+                        🚪 Exit Parking
+                    </a>
+                    {% else %}
+                    <a href="{% url 'exit_parking' 0 %}" class="btn btn-secondary">
+                        🚪 Exit Parking
+                    </a>
+                    {% endif %}
+                    <button class="btn btn-secondary" onclick="openAddVehicleModal()">
+                        ➕ Add Vehicle
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                {% if active_booking %}
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2 class="section-title">🅿️ Active Parking</h2>
+                    </div>
+
+                    <div class="active-booking">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3>Booking ID: #{{ active_booking.booking_id }}</h3>
+                            <span class="active-badge">🟢 Active</span>
+                        </div>
+
+                        <div class="booking-grid">
+                            <div class="booking-item">
+                                <div class="booking-label">Vehicle</div>
+                                <div class="booking-value">{{ active_booking.vehicle_number }}</div>
+                            </div>
+                            <div class="booking-item">
+                                <div class="booking-label">Slot</div>
+                                <div class="booking-value">{{ active_booking.slot_number }}</div>
+                            </div>
+                            <div class="booking-item">
+                                <div class="booking-label">Parking Lot</div>
+                                <div class="booking-value">{{ active_booking.parking_lot }}</div>
+                            </div>
+                            <div class="booking-item">
+                                <div class="booking-label">Entry Time</div>
+                                <div class="booking-value">{{ active_booking.entry_time|date:"h:i A" }}</div>
+                            </div>
+                            <div class="booking-item">
+                                <div class="booking-label">Duration</div>
+                                <div class="booking-value">{{ active_booking.duration }}h</div>
+                            </div>
+                            <div class="booking-item">
+                                <div class="booking-label">Amount Paid</div>
+                                <div class="booking-value">₹{{ active_booking.total_amount }}</div>
+                            </div>
+                        </div>
+
+                        <div class="qr-section">
+                            <div class="qr-code-box">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{ active_booking.booking_id }}" 
+                                     alt="QR Code" style="width: 100%; height: 100%; object-fit: contain;" />
+                            </div>
+                            <div>
+                                <h4 style="color: var(--warning); margin-bottom: 15px;">📱 Scan to Exit</h4>
+                                <p style="margin-bottom: 10px;">✓ Show this QR code at the exit gate</p>
+                                <p style="margin-bottom: 10px;">✓ Or scan using the exit terminal</p>
+                                <p style="margin-bottom: 20px;">✓ Keep your phone screen bright</p>
+                                <a href="{% url 'exit_parking' active_booking.id %}" class="btn btn-primary" style="max-width: 200px;">
+                                    🚪 Exit Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="section-card">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🅿️</div>
+                        <h3>No Active Booking</h3>
+                        <p>Book a parking slot to see it here</p>
+                        <a href="{% url 'park_vehicle' %}" class="btn btn-primary" style="max-width: 200px; margin: 20px auto 0;">
+                            🚗 Book Now
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2 class="section-title">🚘 My Vehicles</h2>
+                        <button class="btn btn-primary" style="width: auto; padding: 10px 20px;" onclick="openAddVehicleModal()">
+                            ➕ Add Vehicle
+                        </button>
+                    </div>
+
+                    <div class="vehicle-list">
+                        {% for vehicle in vehicles %}
+                        <div class="vehicle-card" id="vehicle-{{ vehicle.id }}">
+                            <div class="vehicle-info">
+                                <div class="vehicle-icon">
+                                    {% if vehicle.vehicle_type == 'car' %}🚗
+                                    {% elif vehicle.vehicle_type == 'bike' %}🏍️
+                                    {% elif vehicle.vehicle_type == 'ev' %}⚡
+                                    {% else %}🛺{% endif %}
+                                </div>
+                                <div class="vehicle-details">
+                                    <h4>{{ vehicle.license_plate }}</h4>
+                                    <p>{{ vehicle.get_vehicle_type_display }}</p>
+                                </div>
+                            </div>
+                            <div class="vehicle-actions">
+                                <button class="icon-btn edit" onclick="editVehicle('{{ vehicle.id }}', '{{ vehicle.license_plate }}', '{{ vehicle.vehicle_type }}')" title="Edit">✏️</button>
+                                <button class="icon-btn delete" onclick="deleteVehicle('{{ vehicle.id }}', '{{ vehicle.license_plate }}')" title="Delete">🗑️</button>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🚗</div>
+                            <p>No vehicles added yet</p>
+                            <button class="btn btn-primary" style="max-width: 200px; margin: 20px auto 0;" onclick="openAddVehicleModal()">
+                                ➕ Add Your First Vehicle
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2 class="section-title">🧾 Booking History</h2>
+                    </div>
+
+                    {% if bookings %}
+                    <div style="overflow-x: auto;">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Booking ID</th>
+                                    <th>Date</th>
+                                    <th>Vehicle</th>
+                                    <th>Slot</th>
+                                    <th>Duration</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in bookings %}
+                                <tr>
+                                    <td><strong>{{ booking.booking_id }}</strong></td>
+                                    <td>{{ booking.entry_time|date:"d M Y" }}</td>
+                                    <td>{{ booking.vehicle_number }}</td>
+                                    <td>{{ booking.slot_number }}</td>
+                                    <td>{{ booking.duration }}h</td>
+                                    <td><strong>₹{{ booking.total_amount }}</strong></td>
+                                    <td>
+                                        <span class="status-badge status-{{ booking.status|lower }}">
+                                            {{ booking.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <p>No booking history yet</p>
+                        <a href="{% url 'park_vehicle' %}" class="btn btn-primary" style="max-width: 200px; margin: 20px auto 0;">
+                            🚗 Book Your First Slot
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="editProfileModal">
+        <div class="modal-content">
+            <div class="modal-header">✏️ Edit Profile</div>
+            <form id="editProfileForm" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="edit_profile">
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" name="first_name" value="{{ user.first_name }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" name="last_name" value="{{ user.last_name }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" value="{{ user.email }}" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary" style="width: auto; padding: 12px 24px;">
+                        💾 Save Changes
+                    </button>
+                    <button type="button" class="btn btn-secondary" style="width: auto; padding: 12px 24px;" onclick="closeModal('editProfileModal')">
+                        ❌ Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="addVehicleModal">
+        <div class="modal-content">
+            <div class="modal-header">➕ Add New Vehicle</div>
+            <form id="addVehicleForm" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_vehicle">
+                <div class="form-group">
+                    <label>Vehicle Number <span style="color: var(--danger);">*</span></label>
+                    <input type="text" name="license_plate" placeholder="MH12AB1234" style="text-transform: uppercase;" required>
+                </div>
+                <div class="form-group">
+                    <label>Vehicle Type <span style="color: var(--danger);">*</span></label>
+                    <select name="vehicle_type" required>
+                        <option value="">Select Type</option>
+                        <option value="bike">🏍️ 2 Wheeler (Bike)</option>
+                        <option value="car">🚗 4 Wheeler (Car)</option>
+                        <option value="ev">⚡ Electric Vehicle</option>
+                        <option value="3w">🛺 3 Wheeler (Auto)</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary" style="width: auto; padding: 12px 24px;">
+                        ➕ Add Vehicle
+                    </button>
+                    <button type="button" class="btn btn-secondary" style="width: auto; padding: 12px 24px;" onclick="closeModal('addVehicleModal')">
+                        ❌ Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="editVehicleModal">
+        <div class="modal-content">
+            <div class="modal-header">✏️ Edit Vehicle</div>
+            <form id="editVehicleForm" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="edit_vehicle">
+                <input type="hidden" name="vehicle_id" id="editVehicleId">
+                <div class="form-group">
+                    <label>Vehicle Number <span style="color: var(--danger);">*</span></label>
+                    <input type="text" name="license_plate" id="editLicensePlate" style="text-transform: uppercase;" required>
+                </div>
+                <div class="form-group">
+                    <label>Vehicle Type <span style="color: var(--danger);">*</span></label>
+                    <select name="vehicle_type" id="editVehicleType" required>
+                        <option value="bike">🏍️ 2 Wheeler (Bike)</option>
+                        <option value="car">🚗 4 Wheeler (Car)</option>
+                        <option value="ev">⚡ Electric Vehicle</option>
+                        <option value="3w">🛺 3 Wheeler (Auto)</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary" style="width: auto; padding: 12px 24px;">
+                        💾 Save Changes
+                    </button>
+                    <button type="button" class="btn btn-secondary" style="width: auto; padding: 12px 24px;" onclick="closeModal('editVehicleModal')">
+                        ❌ Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Get CSRF token from cookie
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const csrftoken = getCookie('csrftoken');
+
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toast.className = 'toast ' + type + ' show';
+            toastMessage.textContent = message;
+            
+            setTimeout(function() {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function openEditProfileModal() {
+            document.getElementById('editProfileModal').classList.add('show');
+        }
+
+        function openAddVehicleModal() {
+            document.getElementById('addVehicleModal').classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+            }
+        }
+
+        document.getElementById('editProfileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrftoken
+                }
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    showToast('Profile updated successfully!', 'success');
+                    closeModal('editProfileModal');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    showToast(data.message || 'Error updating profile', 'error');
+                }
+            })
+            .catch(function(error) {
+                showToast('Error updating profile', 'error');
+                console.error('Error:', error);
+            });
+        });
+
+        document.getElementById('addVehicleForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrftoken
+                }
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    showToast('Vehicle added successfully!', 'success');
+                    closeModal('addVehicleModal');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    showToast(data.message || 'Error adding vehicle', 'error');
+                }
+            })
+            .catch(function(error) {
+                showToast('Error adding vehicle', 'error');
+                console.error('Error:', error);
+            });
+        });
+
+        function editVehicle(id, plate, type) {
+            document.getElementById('editVehicleId').value = id;
+            document.getElementById('editLicensePlate').value = plate;
+            document.getElementById('editVehicleType').value = type;
+            document.getElementById('editVehicleModal').classList.add('show');
+        }
+
+        document.getElementById('editVehicleForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrftoken
+                }
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    showToast('Vehicle updated successfully!', 'success');
+                    closeModal('editVehicleModal');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    showToast(data.message || 'Error updating vehicle', 'error');
+                }
+            })
+            .catch(function(error) {
+                showToast('Error updating vehicle', 'error');
+                console.error('Error:', error);
+            });
+        });
+
+        function deleteVehicle(id, plate) {
+            if (!confirm('Are you sure you want to delete vehicle ' + plate + '?')) {
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('action', 'delete_vehicle');
+            formData.append('vehicle_id', id);
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrftoken
+                }
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    showToast('Vehicle deleted successfully!', 'success');
+                    const vehicleCard = document.getElementById('vehicle-' + id);
+                    if (vehicleCard) {
+                        vehicleCard.remove();
+                    }
+                } else {
+                    showToast(data.message || 'Error deleting vehicle', 'error');
+                }
+            })
+            .catch(function(error) {
+                showToast('Error deleting vehicle', 'error');
+                console.error('Error:', error);
+            });
+        }
+
+        // Handle escape key to close modals
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.show').forEach(function(modal) {
+                    modal.classList.remove('show');
+                });
+            }
+        });
+
+        // Show Django messages as toasts on page load
+        window.addEventListener('load', function() {
+            const messages = document.querySelectorAll('.django-message');
+            messages.forEach(function(message) {
+                const text = message.textContent;
+                const type = message.dataset.type || 'info';
+                showToast(text, type);
+            });
+        });
+    </script>
+
+    <!-- Hidden Django messages for JavaScript -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="django-message" data-type="{{ message.tags }}" style="display: none;">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exit Verification | Manager Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .camera-feed {
+            position: relative;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+        }
+        .live-pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-sign-out-alt text-3xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">Exit Verification</h1>
+                        <p class="text-sm text-red-200">Vehicle Exit & Payment Processing</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-6">
+                    <a href="{% url 'manager_dashboard' %}" class="hover:text-red-200 transition">
+                        <i class="fas fa-home mr-2"></i>Dashboard
+                    </a>
+                    <a href="{% url 'cctv_monitoring' %}" class="hover:text-red-200 transition">
+                        <i class="fas fa-video mr-2"></i>CCTV
+                    </a>
+                    <a href="{% url 'entry_verification' %}" class="hover:text-red-200 transition">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Entry
+                    </a>
+                    <a href="{% url 'security_incidents' %}" class="hover:text-red-200 transition">
+                        <i class="fas fa-shield-alt mr-2"></i>Incidents
+                    </a>
+                    <a href="{% url 'user_logout' %}" class="bg-red-800 hover:bg-red-900 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-sign-out-alt mr-1"></i>Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-600 text-sm mb-1">Today's Exits</p>
+                        <h3 class="text-3xl font-bold text-gray-800">{{ total_today }}</h3>
+                    </div>
+                    <div class="bg-blue-100 p-4 rounded-lg">
+                        <i class="fas fa-car text-3xl text-blue-500"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-red-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-600 text-sm mb-1">Verified by You</p>
+                        <h3 class="text-3xl font-bold text-gray-800">{{ verified_count }}</h3>
+                    </div>
+                    <div class="bg-red-100 p-4 rounded-lg">
+                        <i class="fas fa-check-circle text-3xl text-red-500"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-orange-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-600 text-sm mb-1">Ready for Exit</p>
+                        <h3 class="text-3xl font-bold text-gray-800">{{ ready_for_exit|length }}</h3>
+                    </div>
+                    <div class="bg-orange-100 p-4 rounded-lg">
+                        <i class="fas fa-clock text-3xl text-orange-500"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Side - Exit Gate Cameras & Vehicles -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Exit Gate Camera Feeds -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold flex items-center">
+                            <div class="bg-red-100 p-2 rounded-lg mr-3">
+                                <i class="fas fa-video text-red-500"></i>
+                            </div>
+                            Exit Gate Camera Feeds
+                        </h3>
+                        <button onclick="refreshCameras()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-sync-alt mr-2"></i>Refresh
+                        </button>
+                    </div>
+
+                    <!-- Camera Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        {% for lot in assigned_lots %}
+                        <div class="camera-feed group relative">
+                            <div class="absolute inset-0 bg-gradient-to-br from-red-900 to-gray-900 flex items-center justify-center">
+                                <div class="text-center text-white">
+                                    <i class="fas fa-video text-6xl mb-4 opacity-50"></i>
+                                    <p class="text-lg font-semibold">Exit Gate - {{ lot.name }}</p>
+                                    <p class="text-sm text-gray-400 mt-2">Camera Feed</p>
+                                </div>
+                            </div>
+
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/70 pointer-events-none">
+                                <div class="absolute top-4 left-4 right-4 flex justify-between items-start">
+                                    <div class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center space-x-2 live-pulse">
+                                        <span class="w-2 h-2 bg-white rounded-full"></span>
+                                        <span>LIVE</span>
+                                    </div>
+                                    <button class="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-3 py-2 rounded-lg transition">
+                                        <i class="fas fa-expand"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="absolute bottom-4 left-4 right-4">
+                                    <div class="bg-black/50 backdrop-blur-sm rounded-lg px-4 py-2">
+                                        <p class="text-white text-sm font-semibold">{{ lot.name }} - Exit Gate</p>
+                                        <p class="text-white/70 text-xs" id="camera-time-{{ lot.id }}">Loading...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-span-2 text-center py-12 text-gray-500">
+                            <i class="fas fa-video-slash text-5xl mb-3"></i>
+                            <p>No camera feeds available</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Quick Search -->
+                    <div class="border-t pt-6">
+                        <h4 class="font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-search text-blue-500 mr-2"></i>
+                            Quick Vehicle Search
+                        </h4>
+                        <form onsubmit="searchVehicle(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <input type="text" 
+                                   id="search_vehicle" 
+                                   placeholder="Vehicle Number" 
+                                   class="px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 uppercase"
+                                   required>
+                            <input type="text" 
+                                   id="search_booking" 
+                                   placeholder="Booking ID (Optional)" 
+                                   class="px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            <button type="submit" 
+                                    class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-bold transition">
+                                <i class="fas fa-search mr-2"></i>Search
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Vehicles Ready for Exit -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fas fa-list text-red-500 mr-2"></i>
+                        Vehicles Ready for Exit
+                    </h3>
+
+                    <div class="space-y-4">
+                        {% for session in ready_for_exit %}
+                        {% load static %}
+                        <div class="border-l-4 border-red-500 bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <!-- Vehicle Info -->
+                                <div>
+                                    <p class="text-xs text-gray-500 mb-1">Vehicle</p>
+                                    <p class="font-bold text-gray-800 text-lg">{{ session.vehicle.license_plate }}</p>
+                                    <p class="text-sm text-gray-600">
+                                        <i class="fas fa-parking mr-1"></i>{{ session.slot.slot_number }}
+                                    </p>
+                                </div>
+
+                                <!-- Booking Info -->
+                                <div>
+                                    <p class="text-xs text-gray-500 mb-1">Booking ID</p>
+                                    <p class="bg-blue-100 text-blue-800 px-3 py-1 rounded font-mono text-sm inline-block">
+                                        PK-{{ session.id|stringformat:"05d" }}
+                                    </p>
+                                    <p class="text-xs text-gray-600 mt-1">
+                                        Entry: {{ session.entry_time|date:"h:i A" }}
+                                    </p>
+                                </div>
+
+                                <!-- Duration & Fee -->
+                                <div>
+                                    <p class="text-xs text-gray-500 mb-1">Duration</p>
+                                    <p class="font-bold text-orange-600" id="duration-{{ session.id }}">
+                                        Calculating...
+                                    </p>
+                                    <p class="text-sm text-gray-600 mt-1">
+                                        Estimated Fee: 
+                                        <span class="font-bold text-green-600" id="fee-{{ session.id }}">₹0</span>
+                                    </p>
+                                </div>
+
+                                <!-- Action Button -->
+                                <div class="flex items-center justify-end">
+                                    <button onclick="processExit({{ session.id }}, '{{ session.vehicle.license_plate }}')"
+                                            class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-bold transition">
+                                        <i class="fas fa-sign-out-alt mr-2"></i>Process Exit
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <script>
+                            // Calculate duration and fee for session {{ session.id }}
+                            (function() {
+                                const entryTime = new Date('{{ session.entry_time|date:"c" }}');
+                                
+                                function updateDuration() {
+                                    const now = new Date();
+                                    const durationMs = now - entryTime;
+                                    const hours = Math.floor(durationMs / (1000 * 60 * 60));
+                                    const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+                                    
+                                    const durationEl = document.getElementById('duration-{{ session.id }}');
+                                    if (durationEl) {
+                                        durationEl.textContent = `${hours}h ${minutes}m`;
+                                    }
+                                    
+                                    // Calculate fee (₹20/hour for car, ₹10/hour for bike)
+                                    const rate = '{{ session.vehicle.vehicle_type }}' === 'car' ? 20 : 10;
+                                    const totalHours = Math.ceil(durationMs / (1000 * 60 * 60));
+                                    const fee = totalHours * rate;
+                                    
+                                    const feeEl = document.getElementById('fee-{{ session.id }}');
+                                    if (feeEl) {
+                                        feeEl.textContent = `₹${fee}`;
+                                    }
+                                }
+                                
+                                updateDuration();
+                                setInterval(updateDuration, 1000);
+                            })();
+                        </script>
+                        {% empty %}
+                        <div class="text-center py-12 text-gray-500">
+                            <i class="fas fa-car text-5xl mb-3"></i>
+                            <p>No vehicles ready for exit</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Today's Exit Log -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fas fa-history text-blue-500 mr-2"></i>
+                        Today's Exit Log
+                    </h3>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Booking ID</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Vehicle</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Exit Time</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Duration</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Fee</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                {% for session in today_exits %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-3">
+                                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded font-mono text-sm">
+                                            PK-{{ session.id|stringformat:"05d" }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-car text-gray-400 mr-2"></i>
+                                            <span class="font-bold text-gray-800">{{ session.vehicle.license_plate }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-gray-600 text-sm">
+                                        {{ session.exit_time|date:"h:i A" }}
+                                    </td>
+                                    <td class="px-4 py-3 text-gray-600">
+                                        {% widthratio session.exit_time|timeuntil:session.entry_time 3600 1 %}h
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <span class="font-bold text-green-600">₹{{ session.fee|default:"0" }}</span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                                        No exits recorded today
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="space-y-6">
+                <!-- Exit Processing Guide -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                        Exit Process
+                    </h3>
+
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                                1
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-800">Verify Vehicle</p>
+                                <p class="text-sm text-gray-600">Check vehicle number matches booking</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                                2
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-800">Calculate Fee</p>
+                                <p class="text-sm text-gray-600">System auto-calculates based on duration</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                                3
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-800">Collect Payment</p>
+                                <p class="text-sm text-gray-600">Accept cash/card/UPI payment</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                                4
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-800">Process Exit</p>
+                                <p class="text-sm text-gray-600">Confirm exit and free parking slot</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pricing Reference -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-dollar-sign text-green-500 mr-2"></i>
+                        Pricing Reference
+                    </h3>
+
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <p class="font-semibold text-gray-800">🏍️ 2 Wheeler</p>
+                                <p class="text-xs text-gray-600">Bikes & Scooters</p>
+                            </div>
+                            <span class="font-bold text-green-600 text-lg">₹10/hr</span>
+                        </div>
+
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <p class="font-semibold text-gray-800">🚗 4 Wheeler</p>
+                                <p class="text-xs text-gray-600">Cars & SUVs</p>
+                            </div>
+                            <span class="font-bold text-green-600 text-lg">₹20/hr</span>
+                        </div>
+
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <p class="font-semibold text-gray-800">⚡ EV Charging</p>
+                                <p class="text-xs text-gray-600">Electric Vehicles</p>
+                            </div>
+                            <span class="font-bold text-green-600 text-lg">₹25/hr</span>
+                        </div>
+
+                        <div class="border-t pt-3 mt-3">
+                            <p class="text-xs text-gray-600">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Monthly pass holders: FREE parking
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-bolt text-yellow-500 mr-2"></i>
+                        Quick Actions
+                    </h3>
+
+                    <div class="space-y-3">
+                        <a href="{% url 'cctv_monitoring' %}" 
+                           class="block bg-purple-500 hover:bg-purple-600 text-white px-4 py-3 rounded-lg text-center transition">
+                            <i class="fas fa-video mr-2"></i>View All Cameras
+                        </a>
+
+                        <a href="{% url 'entry_verification' %}" 
+                           class="block bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg text-center transition">
+                            <i class="fas fa-sign-in-alt mr-2"></i>Entry Verification
+                        </a>
+
+                        <button onclick="reportIncident()" 
+                                class="w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-3 rounded-lg transition">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>Report Incident
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exit Processing Modal -->
+    <div id="exitModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">Process Vehicle Exit</h3>
+                <button onclick="closeExitModal()" class="text-gray-400 hover:text-gray-600 text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="exitForm" method="POST" action="">
+                {% csrf_token %}
+                <div class="space-y-6">
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-1">Vehicle Number</p>
+                        <p id="modal_vehicle" class="text-2xl font-bold text-gray-800">—</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Duration</p>
+                            <p id="modal_duration" class="text-xl font-bold text-orange-600">—</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Total Fee</p>
+                            <p id="modal_fee" class="text-xl font-bold text-green-600">—</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Payment Method *</label>
+                        <select name="payment_method" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500" required>
+                            <option value="cash">💵 Cash</option>
+                            <option value="upi">📱 UPI</option>
+                            <option value="card">💳 Card</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Exit Notes (Optional)</label>
+                        <textarea name="exit_notes" rows="3" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500" placeholder="Any observations or remarks..."></textarea>
+                    </div>
+
+                    <div class="flex space-x-4">
+                        <button type="submit" class="flex-1 bg-red-500 hover:bg-red-600 text-white px-6 py-4 rounded-lg font-bold text-lg transition">
+                            <i class="fas fa-check mr-2"></i>Confirm Exit
+                        </button>
+                        <button type="button" onclick="closeExitModal()" class="px-6 py-4 border-2 border-gray-300 rounded-lg font-bold text-gray-700 hover:bg-gray-50 transition">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Update camera timestamps
+        function updateCameraTimestamps() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            document.querySelectorAll('[id^="camera-time-"]').forEach(el => {
+                el.textContent = timeString;
+            });
+        }
+        updateCameraTimestamps();
+        setInterval(updateCameraTimestamps, 1000);
+
+        // Refresh cameras
+        function refreshCameras() {
+            location.reload();
+        }
+
+        // Search vehicle
+        function searchVehicle(event) {
+            event.preventDefault();
+            const vehicle = document.getElementById('search_vehicle').value;
+            alert(`Searching for vehicle: ${vehicle}`);
+        }
+
+        // Process exit
+        function processExit(sessionId, vehicleNumber) {
+            // Show modal
+            document.getElementById('exitModal').classList.remove('hidden');
+            document.getElementById('exitModal').classList.add('flex');
+            
+            // Update modal content
+            document.getElementById('modal_vehicle').textContent = vehicleNumber;
+            document.getElementById('modal_duration').textContent = document.getElementById('duration-' + sessionId).textContent;
+            document.getElementById('modal_fee').textContent = document.getElementById('fee-' + sessionId).textContent;
+            
+            // Update form action
+            document.getElementById('exitForm').action = `/manager/manual-exit/${sessionId}/`;
+        }
+
+        // Close modal
+        function closeExitModal() {
+            document.getElementById('exitModal').classList.add('hidden');
+            document.getElementById('exitModal').classList.remove('flex');
+        }
+
+        // Report incident
+        function reportIncident() {
+            window.location.href = "{% url 'security_incidents' %}";
+        }
+
+        // Auto-refresh every 30 seconds
+        setTimeout(() => location.reload(), 30000);
+    </script>
+</body>
+</html>

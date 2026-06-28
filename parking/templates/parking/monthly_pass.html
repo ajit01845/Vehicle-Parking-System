@@ -1,0 +1,896 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Pass - Smart Parking System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #6366f1; --primary-dark: #4f46e5; --secondary: #8b5cf6;
+            --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+            --light: #f8fafc; --dark: #1e293b;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; padding-bottom: 0;
+        }
+        /* Navbar */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000;
+        }
+        .nav-container {
+            max-width: 1400px; margin: 0 auto; padding: 12px 25px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .logo-icon { font-size: 36px; animation: bounce 2s ease-in-out infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        .logo-text h1 {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-size: 22px; font-weight: 800;
+        }
+        .logo-text .tagline { font-size: 11px; color: #64748b; font-weight: 500; }
+        .nav-center { display: flex; gap: 8px; list-style: none; }
+        .nav-center a {
+            text-decoration: none; color: var(--dark); font-weight: 600;
+            padding: 10px 18px; border-radius: 10px; transition: all 0.3s; font-size: 14px;
+        }
+        .nav-center a:hover, .nav-center a.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        .logout-btn {
+            background: linear-gradient(135deg, var(--danger), #dc2626);
+            color: white; padding: 10px 24px; border-radius: 50px;
+            text-decoration: none; font-weight: 600; font-size: 14px; transition: all 0.3s;
+        }
+        .logout-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4); }
+        .container { max-width: 1400px; margin: 0 auto; padding: 30px 25px; }
+        /* Hero Section */
+        .hero-section {
+            background: white; border-radius: 20px; padding: 40px; margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1); text-align: center;
+        }
+        .hero-section h1 {
+            font-size: 42px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 12px; font-weight: 900;
+        }
+        .hero-section p { font-size: 18px; color: #64748b; margin-bottom: 25px; }
+        .benefits-row {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px; margin-top: 30px;
+        }
+        .benefit-card {
+            background: linear-gradient(135deg, #f0f4ff, #e8ebff);
+            padding: 20px; border-radius: 15px; text-align: center;
+        }
+        .benefit-card .icon { font-size: 36px; margin-bottom: 10px; }
+        .benefit-card h3 { font-size: 16px; color: var(--dark); margin-bottom: 5px; }
+        .benefit-card p { font-size: 13px; color: #64748b; }
+        /* Pass Types */
+        .pass-types-section { margin-bottom: 30px; }
+        .section-title {
+            font-size: 28px; color: white; margin-bottom: 20px; font-weight: 800;
+            text-align: center; text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .pass-types-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px;
+        }
+        .pass-type-card {
+            background: white; border-radius: 20px; padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1); transition: all 0.3s;
+            position: relative; overflow: hidden;
+        }
+        .pass-type-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+        .pass-type-card:hover { transform: translateY(-8px); box-shadow: 0 15px 50px rgba(0,0,0,0.15); }
+        .pass-name { font-size: 24px; color: var(--dark); margin-bottom: 10px; font-weight: 800; }
+        .pass-price {
+            font-size: 42px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-weight: 900; margin-bottom: 5px;
+        }
+        .pass-duration { color: #64748b; font-size: 14px; margin-bottom: 20px; }
+        .features-list { list-style: none; margin: 20px 0; }
+        .features-list li {
+            padding: 10px 0; color: #475569; font-size: 14px; border-bottom: 1px solid #f1f5f9;
+        }
+        .features-list li:last-child { border-bottom: none; }
+        .features-list li::before {
+            content: '✓'; color: var(--success); font-weight: bold; margin-right: 10px; font-size: 16px;
+        }
+        .select-btn {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white; border: none; border-radius: 12px;
+            font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s;
+        }
+        .select-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4); }
+        /* Purchase Form */
+        .purchase-form {
+            background: white; border-radius: 20px; padding: 35px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1); display: none; margin-top: 30px;
+        }
+        .purchase-form.active { display: block; animation: slideDown 0.3s ease; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .form-header { text-align: center; margin-bottom: 30px; }
+        .form-header h2 { font-size: 28px; color: var(--dark); margin-bottom: 8px; }
+        .form-header p { color: #64748b; font-size: 14px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        .form-group label {
+            display: block; margin-bottom: 8px; color: var(--dark); font-weight: 600; font-size: 14px;
+        }
+        .form-group input, .form-group select {
+            width: 100%; padding: 12px 15px; border: 2px solid #e2e8f0;
+            border-radius: 10px; font-size: 14px; transition: all 0.3s;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+        .locations-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+        .location-checkbox { position: relative; }
+        .location-checkbox input { display: none; }
+        .location-label {
+            display: block; padding: 15px; border: 2px solid #e2e8f0; border-radius: 12px;
+            cursor: pointer; transition: all 0.3s; text-align: center;
+        }
+        .location-checkbox input:checked + .location-label {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white; border-color: var(--primary);
+        }
+        .location-label .icon { font-size: 28px; margin-bottom: 8px; }
+        .location-label .name { font-size: 13px; font-weight: 600; }
+        .payment-methods { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+        .payment-option {
+            border: 2px solid #e2e8f0; padding: 20px 15px; border-radius: 12px;
+            cursor: pointer; transition: all 0.3s; text-align: center;
+        }
+        .payment-option:hover { border-color: var(--primary); background: #f0f4ff; }
+        .payment-option.selected {
+            border-color: var(--primary); background: linear-gradient(135deg, #f0f4ff, #e8ebff); border-width: 3px;
+        }
+        .payment-option .icon { font-size: 32px; margin-bottom: 8px; }
+        .payment-option .label { font-size: 13px; font-weight: 600; color: var(--dark); }
+        .toggle-switch { position: relative; display: inline-block; width: 60px; height: 30px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5e1; transition: .4s; border-radius: 30px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 22px; width: 22px; left: 4px; bottom: 4px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background: linear-gradient(135deg, var(--primary), var(--secondary)); }
+        input:checked + .slider:before { transform: translateX(30px); }
+        .submit-btn {
+            width: 100%; padding: 16px;
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white; border: none; border-radius: 12px;
+            font-size: 18px; font-weight: 700; cursor: pointer; transition: all 0.3s;
+        }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4); }
+        /* My Passes Section */
+        .my-passes-section {
+            background: white; border-radius: 20px; padding: 35px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1); margin-top: 30px;
+        }
+        .my-passes-section h2 { font-size: 26px; color: var(--dark); margin-bottom: 25px; font-weight: 800; }
+        .pass-card {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-radius: 15px; padding: 25px; margin-bottom: 20px; border-left: 5px solid var(--primary);
+        }
+        .pass-card-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
+        }
+        .pass-id { font-size: 18px; font-weight: 700; color: var(--primary); }
+        .pass-status {
+            padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; color: white;
+        }
+        .pass-status.active { background: var(--success); }
+        .pass-status.pending { background: var(--warning); }
+        .pass-status.expired { background: var(--danger); }
+        .pass-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .pass-detail-item { display: flex; flex-direction: column; }
+        .pass-detail-label { font-size: 12px; color: #64748b; margin-bottom: 4px; }
+        .pass-detail-value { font-size: 15px; font-weight: 600; color: var(--dark); }
+        /* Modal Styles */
+        .modal {
+            display: none; position: fixed; z-index: 9999; left: 0; top: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+        }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .modal-content {
+            background: white; border-radius: 20px; padding: 40px; max-width: 800px;
+            max-height: 90vh; overflow-y: auto; position: relative; animation: modalSlide 0.3s ease;
+        }
+        @keyframes modalSlide { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-close {
+            position: absolute; top: 20px; right: 20px; font-size: 28px;
+            cursor: pointer; color: #64748b; transition: all 0.3s;
+        }
+        .modal-close:hover { color: var(--danger); transform: rotate(90deg); }
+        /* Messages */
+        .messages { max-width: 1400px; margin: 20px auto; padding: 0 25px; }
+        .message {
+            padding: 15px 20px; border-radius: 12px; margin-bottom: 15px;
+            font-size: 14px; animation: slideIn 0.3s;
+        }
+        @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .message.success { background: #dcfce7; color: var(--success); border-left: 4px solid var(--success); }
+        .message.error { background: #fee2e2; color: var(--danger); border-left: 4px solid var(--danger); }
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: white; margin-top: 60px; padding: 60px 0 0; border-radius: 0;
+        }
+        .footer-container { max-width: 1400px; margin: 0 auto; padding: 0 25px; }
+        .footer-top {
+            display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px;
+            padding-bottom: 50px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .footer-section h4 { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: white; }
+        .footer-section ul { list-style: none; }
+        .footer-section li { margin-bottom: 12px; }
+        .footer-section a {
+            color: #cbd5e1; text-decoration: none; font-size: 14px; transition: all 0.3s;
+        }
+        .footer-section a:hover { color: white; transform: translateX(5px); }
+        .footer-bottom { padding: 30px 0; text-align: center; }
+        .footer-bottom p { color: #94a3b8; font-size: 14px; margin: 0; }
+        @media (max-width: 1024px) {
+            .pass-types-grid, .form-grid { grid-template-columns: 1fr; }
+            .payment-methods { grid-template-columns: repeat(2, 1fr); }
+            .footer-top { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .nav-center { display: none; }
+            .hero-section { padding: 25px; }
+            .hero-section h1 { font-size: 32px; }
+            .benefits-row, .locations-grid, .payment-methods { grid-template-columns: 1fr; }
+            .footer-top { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{% url 'home' %}" class="logo">
+                <div class="logo-icon">🚗</div>
+                <div class="logo-text">
+                    <h1>Parkease</h1>
+                    <p class="tagline">Pune Smart Parking Solutions</p>
+                </div>
+            </a>
+            <ul class="nav-center">
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'park_vehicle' %}">Book Parking</a></li>
+                <li><a href="{% url 'monthly_pass' %}" class="active">Monthly Pass</a></li>
+                <li><a href="{% url 'user_profile' %}">My Bookings</a></li>
+                <li><a href="{% url 'contact' %}">Contact</a></li>
+            </ul>
+            {% if user.is_authenticated %}
+                <a href="{% url 'user_logout' %}" class="logout-btn">🚪 Logout</a>
+            {% else %}
+                <a href="{% url 'user_login' %}" class="logout-btn" style="background: linear-gradient(135deg, var(--success), #059669);">🔐 Login</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="container">
+        <div class="hero-section">
+            <h1>🎫 Monthly Parking Pass</h1>
+            <p>Unlimited parking access with exclusive benefits. Save up to 60% compared to hourly parking!</p>
+            
+            <div class="benefits-row">
+                <div class="benefit-card">
+                    <div class="icon">🔓</div>
+                    <h3>Unlimited Access</h3>
+                    <p>24/7 entry & exit anytime</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="icon">💰</div>
+                    <h3>Cost Savings</h3>
+                    <p>Up to 60% cheaper than hourly</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="icon">🅿️</div>
+                    <h3>Priority Parking</h3>
+                    <p>Reserved slots guaranteed</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="icon">📱</div>
+                    <h3>Digital QR Pass</h3>
+                    <p>Instant entry with QR code</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="icon">🔒</div>
+                    <h3>Secure Parking</h3>
+                    <p>CCTV monitored 24/7</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="icon">🔄</div>
+                    <h3>Auto Renewal</h3>
+                    <p>Never worry about expiry</p>
+                </div>
+            </div>
+        </div>
+<div class="pass-types-section">
+    <h2 class="section-title">🎯 Choose Your Plan</h2>
+    
+    <div class="pass-types-grid">
+        {% for pass_type in pass_types %}
+        <div class="pass-type-card">
+            <!-- ✅ CHANGED: Added icon before name -->
+            <h3 class="pass-name">{{ pass_type.icon|default:"🎫" }} {{ pass_type.name }} Pass</h3>
+            
+            <div class="pass-price">₹{{ pass_type.price }}</div>
+            <p class="pass-duration">Valid for {{ pass_type.duration_days }} days</p>
+            
+            <ul class="features-list">
+                <li>Unlimited entry & exit 24/7</li>
+                <li>Valid for {{ pass_type.get_vehicle_type_display }}</li>
+                <li>All locations access</li>
+                <li>Priority parking slots</li>
+                <li>Digital QR code pass</li>
+                <li>24/7 customer support</li>
+                <li>Auto-renewal available</li>
+            </ul>
+            
+            <button class="select-btn" 
+                    data-pass-id="{{ pass_type.id }}"
+                    data-pass-price="{{ pass_type.price }}">
+                Select {{ pass_type.name }} Pass
+            </button>
+        </div>
+        {% empty %}
+        <p style="color: white; text-align: center;">No pass types available at the moment.</p>
+        {% endfor %}
+    </div>
+</div>
+
+        <form method="POST" action="{% url 'purchase_monthly_pass' %}" id="purchaseForm" class="purchase-form">
+            {% csrf_token %}
+            
+            <div class="form-header">
+                <h2>🎫 Complete Your Purchase</h2>
+                <p>Fill in the details below to activate your monthly pass</p>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>🎫 Select Pass Type *</label>
+                    <select name="pass_type" id="passTypeSelect" required>
+                        <option value="">-- Select Pass Type --</option>
+                        {% for pass in pass_types %}
+                        <option value="{{ pass.id }}" data-price="{{ pass.price }}">
+                            {{ pass.name }} ({{ pass.get_vehicle_type_display }}) - ₹{{ pass.price }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>🚗 Select Vehicle *</label>
+                    <select name="vehicle" required>
+                        <option value="">-- Select Vehicle --</option>
+                        {% for vehicle in user_vehicles %}
+                        <option value="{{ vehicle.id }}">
+                            {{ vehicle.license_plate }} ({{ vehicle.get_vehicle_type_display }})
+                        </option>
+                        {% empty %}
+                        <option value="" disabled>No vehicles found. Add one first!</option>
+                        {% endfor %}
+                    </select>
+                    <small style="color: #64748b; font-size: 12px;">
+                        Don't have a vehicle? <a href="{% url 'user_profile' %}" style="color: var(--primary);">Add one here</a>
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label>📱 Contact Number *</label>
+                    <input type="tel" name="contact_number" placeholder="9876543210" pattern="[0-9]{10}" required>
+                </div>
+            </div>
+
+            <div class="form-group full-width">
+                <label>📍 Select Parking Locations * (Select all that apply)</label>
+                <div class="locations-grid">
+                    {% for location in locations %}
+                    <div class="location-checkbox">
+                        <input type="checkbox" name="locations" value="{{ location.id }}" id="loc{{ location.id }}" checked>
+                        <label for="loc{{ location.id }}" class="location-label">
+                            <div class="icon">🅿️</div>
+                            <div class="name">{{ location.name }}</div>
+                        </label>
+                    </div>
+                    {% empty %}
+                    <p>No locations available</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="form-group full-width">
+                <label>💳 Payment Method *</label>
+                <div class="payment-methods">
+                    <div class="payment-option selected" data-method="upi">
+                        <div class="icon">📱</div>
+                        <div class="label">UPI</div>
+                    </div>
+                    <div class="payment-option" data-method="card">
+                        <div class="icon">💳</div>
+                        <div class="label">Card</div>
+                    </div>
+                    <div class="payment-option" data-method="wallet">
+                        <div class="icon">👛</div>
+                        <div class="label">Wallet</div>
+                    </div>
+                    <div class="payment-option" data-method="cash">
+                        <div class="icon">💵</div>
+                        <div class="label">Cash</div>
+                    </div>
+                </div>
+                <input type="hidden" name="payment_method" id="paymentMethod" value="upi">
+            </div>
+
+            <div class="form-group full-width" style="display: flex; align-items: center; gap: 15px;">
+                <label style="margin: 0; flex: 1;">
+                    🔄 Enable Auto-Renewal
+                    <small style="display: block; color: #64748b; font-size: 12px; font-weight: 400;">
+                        Your pass will automatically renew before expiry
+                    </small>
+                </label>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="auto_renew">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                🎉 Purchase Pass - Pay ₹<span id="finalAmount">0</span>
+            </button>
+        </form>
+
+        {% if user_passes %}
+        <div class="my-passes-section">
+            <h2>🎫 My Passes</h2>
+            
+            {% for pass in user_passes %}
+            <div class="pass-card">
+                <div class="pass-card-header">
+                    <span class="pass-id">🎫 {{ pass.pass_number }}</span>
+                    <span class="pass-status {{ pass.status }}">{{ pass.get_status_display|upper }}</span>
+                </div>
+                
+                <div class="pass-details">
+                    <div class="pass-detail-item">
+                        <span class="pass-detail-label">Pass Type</span>
+                        <span class="pass-detail-value">{{ pass.pass_type.name }}</span>
+                    </div>
+                    <div class="pass-detail-item">
+                        <span class="pass-detail-label">Vehicle</span>
+                        <span class="pass-detail-value">{{ pass.vehicle.license_plate }}</span>
+                    </div>
+                    <div class="pass-detail-item">
+                        <span class="pass-detail-label">Valid From</span>
+                        <span class="pass-detail-value">{{ pass.start_date|date:"d M Y" }}</span>
+                    </div>
+                    <div class="pass-detail-item">
+                        <span class="pass-detail-label">Valid Until</span>
+                        <span class="pass-detail-value">{{ pass.end_date|date:"d M Y" }}</span>
+                    </div>
+                    <div class="pass-detail-item">
+                        <span class="pass-detail-label">Amount Paid</span>
+                        <span class="pass-detail-value">₹{{ pass.amount }}</span>
+                    </div>
+                    <div class="pass-detail-item">
+                        <span class="pass-detail-label">Auto-Renew</span>
+                        <span class="pass-detail-value">
+                            {% if pass.auto_renew %}✅ Enabled{% else %}❌ Disabled{% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                </div>
+
+                <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+                    {% if pass.status == 'active' %}
+                    <button onclick="showQRCode('{{ pass.qr_code }}', '{{ pass.pass_number }}')" style="padding: 10px 25px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">
+                        📱 Show QR Code
+                    </button>
+                    {% endif %}
+                    
+                    {% if pass.status == 'pending' %}
+                    <button disabled style="padding: 10px 25px; background: #cbd5e1; color: #64748b; border: none; border-radius: 10px; font-weight: 600; cursor: not-allowed;">
+                        ⏳ Awaiting Admin Approval
+                    </button>
+                    {% endif %}
+                    
+                    <button onclick="openSubscriptionModal('{{ pass.pass_number }}', '{{ pass.status }}', {{ pass.auto_renew|yesno:'true,false' }})" style="padding: 10px 25px; background: white; color: var(--primary); border: 2px solid var(--primary); border-radius: 10px; font-weight: 600; cursor: pointer;">
+                        ⚙️ Manage Subscription
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-top">
+                <div class="footer-section">
+                    <h4>🚗 About Us</h4>
+                    <ul>
+                        <li><a href="#">About Company</a></li>
+                        <li><a href="#">Our Mission</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Press Release</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>🅿️ Services</h4>
+                    <ul>
+                        <li><a href="{% url 'park_vehicle' %}">Book Parking</a></li>
+                        <li><a href="{% url 'monthly_pass' %}">Monthly Pass</a></li>
+                        <li><a href="#">Corporate Parking</a></li>
+                        <li><a href="#">Event Parking</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>📞 Support</h4>
+                    <ul>
+                        <li><a href="{% url 'contact' %}">Contact Us</a></li>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">FAQs</a></li>
+                        <li><a href="#">Report Issue</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>⚖️ Legal</h4>
+                    <ul>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Refund Policy</a></li>
+                        <li><a href="#">Cookie Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>© 2025 Parkease. All Rights Reserved. | Powered by Vehile Parking System </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- QR Code Modal -->
+    <div id="qrModal" class="modal">
+        <div class="modal-content" style="text-align: center; max-width: 550px;">
+            <span class="modal-close" onclick="closeModal('qrModal')">&times;</span>
+            <h2 style="margin-bottom: 10px;">📱 Your QR Pass</h2>
+            <p id="qrPassNumber" style="font-size: 20px; color: var(--primary); font-weight: 700; margin: 10px 0;"></p>
+            
+            <div style="background: linear-gradient(135deg, #f8fafc, #f1f5f9); padding: 30px; border-radius: 20px; display: inline-block; box-shadow: 0 8px 30px rgba(0,0,0,0.15); border: 3px solid var(--primary); margin: 20px 0;">
+                <div id="qrCodeContainer" style="background: white; padding: 20px; border-radius: 15px; display: inline-block;">
+                    <canvas id="qrCanvas" width="280" height="280" style="display: block;"></canvas>
+                </div>
+                <p id="qrCodeText" style="margin-top: 20px; font-size: 16px; font-weight: 700; color: var(--dark); letter-spacing: 1px; font-family: 'Courier New', monospace;"></p>
+            </div>
+            
+            <p style="margin: 20px 0; font-size: 15px; color: #475569; font-weight: 500;">
+                📍 Show this QR code at parking entry gates for quick access
+            </p>
+            
+            <div style="margin: 20px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: left; background: #f0f4ff; padding: 20px; border-radius: 12px;">
+                <div>
+                    <p style="margin: 0; font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 600;">Pass Type</p>
+                    <p id="qrPassType" style="margin: 5px 0 0 0; font-size: 15px; font-weight: 700; color: var(--dark);"></p>
+                </div>
+                <div>
+                    <p style="margin: 0; font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 600;">Valid Until</p>
+                    <p id="qrPassExpiry" style="margin: 5px 0 0 0; font-size: 15px; font-weight: 700; color: var(--dark);"></p>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                <button onclick="downloadQRCode()" style="padding: 12px 30px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.3s;">
+                    💾 Download QR Code
+                </button>
+                <button onclick="printQRCode()" style="padding: 12px 30px; background: white; color: var(--primary); border: 2px solid var(--primary); border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.3s;">
+                    🖨️ Print QR Code
+                </button>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 15px; background: #dcfce7; border-radius: 10px; border-left: 4px solid var(--success);">
+                <p style="margin: 0; font-size: 13px; color: #059669;">
+                    <strong>💡 Tip:</strong> Save this QR code to your phone for quick offline access at parking gates
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subscription Management Modal -->
+    <div id="subscriptionModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="modal-close" onclick="closeModal('subscriptionModal')">&times;</span>
+            <h2>⚙️ Manage Subscription</h2>
+            
+            <div style="background: #f0f4ff; padding: 20px; border-radius: 12px; margin: 20px 0;">
+                <p style="margin: 0 0 5px 0; font-size: 13px; color: #64748b;">Pass Number</p>
+                <p id="subPassNumber" style="margin: 0; font-size: 20px; font-weight: 700; color: var(--primary);"></p>
+            </div>
+
+            <div style="background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 20px 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <p style="margin: 0; font-weight: 600; color: var(--dark);">🔄 Auto-Renewal</p>
+                        <p style="margin: 5px 0 0 0; font-size: 12px; color: #64748b;">Automatically renew before expiry</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoRenewToggle" onchange="toggleAutoRenewal()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <div id="renewalInfo" style="display: none; padding: 15px; background: #dcfce7; border-radius: 8px; margin-top: 15px;">
+                    <p style="margin: 0; font-size: 13px; color: var(--success);">
+                        ✅ Auto-renewal is enabled. Your pass will be automatically renewed 3 days before expiry.
+                    </p>
+                </div>
+            </div>
+
+            <div style="display: grid; gap: 15px;">
+                <button onclick="requestRefund()" style="padding: 14px; background: linear-gradient(135deg, var(--warning), #d97706); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 15px;">
+                    💰 Request Refund
+                </button>
+                
+                <button onclick="changeVehicle()" style="padding: 14px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 15px;">
+                    🚗 Change Vehicle
+                </button>
+                
+                <button onclick="reportIssue()" style="padding: 14px; background: white; color: var(--danger); border: 2px solid var(--danger); border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 15px;">
+                    ⚠️ Report Issue
+                </button>
+            </div>
+
+            <div style="margin-top: 25px; padding: 15px; background: #fee2e2; border-radius: 10px;">
+                <p style="margin: 0 0 10px 0; font-weight: 600; color: var(--danger);">⚠️ Need Help?</p>
+                <p style="margin: 0; font-size: 13px; color: #991b1b;">
+                    Contact support: <strong>+91 9876543210</strong> or <strong>support@parkingsystem.com</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Payment method selection
+        document.querySelectorAll('.payment-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                document.getElementById('paymentMethod').value = this.dataset.method;
+            });
+        });
+
+        // Pass type selection buttons
+        document.querySelectorAll('.select-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const passId = this.dataset.passId;
+                const passPrice = this.dataset.passPrice;
+                
+                // Show purchase form
+                document.getElementById('purchaseForm').classList.add('active');
+                
+                // Set pass type in dropdown
+                document.getElementById('passTypeSelect').value = passId;
+                
+                // Update amount
+                document.getElementById('finalAmount').textContent = passPrice;
+                
+                // Scroll to form
+                document.getElementById('purchaseForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Update amount when pass type changes
+        document.getElementById('passTypeSelect')?.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const price = selectedOption.dataset.price;
+            document.getElementById('finalAmount').textContent = price || '0';
+        });
+
+        // QR Code Generation (Simple version)
+        function generateQRCode(text, size = 256) {
+            const canvas = document.getElementById('qrCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = size;
+            canvas.height = size;
+            const modules = 33;
+            const moduleSize = size / modules;
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, size, size);
+            ctx.fillStyle = '#000000';
+            let hash = 0;
+            for (let i = 0; i < text.length; i++) {
+                hash = ((hash << 5) - hash) + text.charCodeAt(i);
+                hash = hash & hash;
+            }
+            drawPositionMarker(ctx, 0, 0, moduleSize * 7);
+            drawPositionMarker(ctx, size - moduleSize * 7, 0, moduleSize * 7);
+            drawPositionMarker(ctx, 0, size - moduleSize * 7, moduleSize * 7);
+            for (let row = 0; row < modules; row++) {
+                for (let col = 0; col < modules; col++) {
+                    if ((row < 8 && col < 8) || 
+                        (row < 8 && col >= modules - 8) || 
+                        (row >= modules - 8 && col < 8)) {
+                        continue;
+                    }
+                    const seed = (row * modules + col + hash) * 2654435761;
+                    if ((seed % 2) === 0) {
+                        ctx.fillRect(col * moduleSize, row * moduleSize, moduleSize - 1, moduleSize - 1);
+                    }
+                }
+            }
+        }
+
+        function drawPositionMarker(ctx, x, y, size) {
+            const moduleSize = size / 7;
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(x, y, size, size);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x + moduleSize, y + moduleSize, size - 2 * moduleSize, size - 2 * moduleSize);
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(x + 2 * moduleSize, y + 2 * moduleSize, size - 4 * moduleSize, size - 4 * moduleSize);
+        }
+
+        function showQRCode(qrCode, passNumber) {
+            document.getElementById('qrPassNumber').textContent = passNumber;
+            document.getElementById('qrCodeText').textContent = qrCode;
+            generateQRCode(qrCode + '-' + passNumber, 280);
+            
+            // Find pass details from the page
+            const passCards = document.querySelectorAll('.pass-card');
+            passCards.forEach(card => {
+                const cardPassNumber = card.querySelector('.pass-id').textContent.replace('🎫 ', '');
+                if (cardPassNumber === passNumber) {
+                    const passType = card.querySelector('.pass-detail-value').textContent;
+                    const validUntil = card.querySelectorAll('.pass-detail-value')[3].textContent;
+                    document.getElementById('qrPassType').textContent = passType;
+                    document.getElementById('qrPassExpiry').textContent = validUntil;
+                }
+            });
+            
+            document.getElementById('qrModal').classList.add('active');
+        }
+
+        function downloadQRCode() {
+            const canvas = document.getElementById('qrCanvas');
+            const link = document.createElement('a');
+            link.download = `parking-pass-${document.getElementById('qrPassNumber').textContent.replace(' ', '')}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showMessage('✅ QR Code downloaded successfully!', 'success');
+        }
+
+        function printQRCode() {
+            window.print();
+        }
+
+        function openSubscriptionModal(passNumber, status, autoRenew) {
+            document.getElementById('subPassNumber').textContent = passNumber;
+            document.getElementById('autoRenewToggle').checked = autoRenew;
+            if (autoRenew) {
+                document.getElementById('renewalInfo').style.display = 'block';
+            }
+            document.getElementById('subscriptionModal').classList.add('active');
+        }
+
+        function toggleAutoRenewal() {
+            const isEnabled = document.getElementById('autoRenewToggle').checked;
+            const renewalInfo = document.getElementById('renewalInfo');
+            if (isEnabled) {
+                renewalInfo.style.display = 'block';
+                showMessage('✅ Auto-renewal enabled successfully!', 'success');
+            } else {
+                renewalInfo.style.display = 'none';
+                showMessage('Auto-renewal disabled.', 'success');
+            }
+        }
+
+        function requestRefund() {
+            if (confirm('Are you sure you want to request a refund? This action will cancel your monthly pass.')) {
+                showMessage('📋 Refund request submitted. Our team will contact you within 24 hours.', 'success');
+                closeModal('subscriptionModal');
+            }
+        }
+
+        function changeVehicle() {
+            alert('To change your vehicle, please contact support at +91 9876543210 or email support@parkingsystem.com');
+        }
+
+        function reportIssue() {
+            window.location.href = "{% url 'contact' %}";
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function showMessage(text, type) {
+            const messagesDiv = document.querySelector('.messages') || createMessagesDiv();
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            messagesDiv.appendChild(message);
+            setTimeout(() => message.remove(), 5000);
+        }
+
+        function createMessagesDiv() {
+            const div = document.createElement('div');
+            div.className = 'messages';
+            document.body.insertBefore(div, document.querySelector('.container'));
+            return div;
+        }
+
+        // Close modals on outside click
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+
+        // Form validation
+        document.getElementById('purchaseForm')?.addEventListener('submit', function(e) {
+            const passType = document.querySelector('select[name="pass_type"]').value;
+            const vehicle = document.querySelector('select[name="vehicle"]').value;
+            const selectedLocations = document.querySelectorAll('input[name="locations"]:checked');
+            
+            if (!passType) {
+                e.preventDefault();
+                showMessage('⚠️ Please select a pass type!', 'error');
+                return false;
+            }
+
+            if (!vehicle) {
+                e.preventDefault();
+                showMessage('⚠️ Please select a vehicle!', 'error');
+                return false;
+            }
+            
+            if (selectedLocations.length === 0) {
+                e.preventDefault();
+                showMessage('⚠️ Please select at least one parking location!', 'error');
+                return false;
+            }
+
+            const submitBtn = this.querySelector('.submit-btn');
+            submitBtn.textContent = '⏳ Processing Payment...';
+            submitBtn.disabled = true;
+        });
+    </script>
+</body>
+</html>

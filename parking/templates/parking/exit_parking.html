@@ -1,0 +1,1532 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exit Parking - Smart Parking System</title>
+    <!-- QR Code Scanner Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+        }
+
+        .breadcrumb {
+            color: white;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb a {
+            color: white;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .breadcrumb a:hover {
+            opacity: 1;
+        }
+
+        .exit-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .header-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .scanner-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            border: 3px dashed #667eea;
+        }
+
+        .scanner-section h3 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        #qr-reader {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto 1rem;
+            border-radius: 15px;
+            overflow: hidden;
+            display: none;
+        }
+
+        #qr-reader.active {
+            display: block;
+        }
+
+        .qr-placeholder {
+            width: 100%;
+            max-width: 300px;
+            height: 300px;
+            background: white;
+            margin: 0 auto 1.5rem;
+            border-radius: 15px;
+            border: 3px solid #667eea;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .qr-placeholder:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #4caf50, transparent);
+            animation: scan 2s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
+        }
+
+        .scanner-instruction {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .divider span {
+            padding: 0 1rem;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .manual-entry {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .manual-entry h3 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .input-group input {
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .session-details {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .session-details.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .session-info {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-left: 5px solid #667eea;
+        }
+
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #dee2e6;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .booking-id {
+            background: #667eea;
+            color: white;
+            padding: 0.5rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .status-badge.active {
+            background: #4caf50;
+            color: white;
+        }
+
+        .status-badge.overtime {
+            background: #ff9800;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-item {
+            background: white;
+            padding: 1.2rem;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .info-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .info-item label {
+            display: block;
+            color: #666;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-item .value {
+            color: #333;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .info-item .vehicle-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .duration-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .duration-card::before {
+            content: '⏱️';
+            position: absolute;
+            font-size: 15rem;
+            opacity: 0.1;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .duration-card h2 {
+            font-size: 3.5rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+            font-weight: bold;
+        }
+
+        .duration-card p {
+            opacity: 0.9;
+            font-size: 1.2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .duration-card .real-time-timer {
+            background: rgba(255,255,255,0.2);
+            padding: 0.8rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .overtime-alert {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-left: 5px solid #ff9800;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .overtime-alert h3 {
+            color: #ff9800;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .overtime-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .overtime-item {
+            background: white;
+            padding: 1.2rem;
+            border-radius: 10px;
+        }
+
+        .overtime-item label {
+            display: block;
+            color: #666;
+            font-size: 0.85rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .overtime-item .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ff9800;
+        }
+
+        .no-overtime {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-left: 5px solid #4caf50;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .no-overtime h3 {
+            color: #2e7d32;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .no-overtime p {
+            color: #666;
+        }
+
+        .fee-breakdown {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-left: 4px solid #4caf50;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+
+        .fee-breakdown h3 {
+            color: #2e7d32;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .fee-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(46, 125, 50, 0.2);
+        }
+
+        .fee-row:last-child {
+            border-bottom: none;
+        }
+
+        .fee-row.total {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #2e7d32;
+            border-top: 2px solid #4caf50;
+            padding-top: 1rem;
+            margin-top: 0.5rem;
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 3rem 2rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .success-message.active {
+            display: block;
+        }
+
+        .success-icon {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            font-size: 4rem;
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.3);
+            animation: scaleUp 0.5s ease-out;
+        }
+
+        @keyframes scaleUp {
+            from {
+                transform: scale(0) rotate(-180deg);
+            }
+            to {
+                transform: scale(1) rotate(0);
+            }
+        }
+
+        .success-message h2 {
+            color: #4caf50;
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .success-message p {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .gate-animation {
+            width: 250px;
+            height: 180px;
+            margin: 2rem auto;
+            position: relative;
+        }
+
+        .gate {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f0f0f0 0%, #d0d0d0 100%);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .gate-left,
+        .gate-right {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(135deg, #333 0%, #555 100%);
+            top: 0;
+            transition: all 1s ease-out;
+        }
+
+        .gate-left {
+            left: 0;
+            border-right: 3px solid #ff9800;
+        }
+
+        .gate-right {
+            right: 0;
+            border-left: 3px solid #ff9800;
+        }
+
+        .gate.open .gate-left {
+            transform: translateX(-100%);
+        }
+
+        .gate.open .gate-right {
+            transform: translateX(100%);
+        }
+
+        .print-section {
+            margin-top: 2rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .print-btn {
+            background: #2196f3;
+            color: white;
+            padding: 0.8rem 1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .print-btn:hover {
+            background: #1976d2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+        }
+
+        .note {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: #1565c0;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            text-align: center;
+            animation: slideUp 0.5s ease-out;
+            max-width: 400px;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0;
+            }
+
+            .exit-card {
+                padding: 1.5rem;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .info-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                grid-template-columns: 1fr;
+            }
+
+            .duration-card h2 {
+                font-size: 2.5rem;
+            }
+
+            .qr-placeholder {
+                max-width: 250px;
+                height: 250px;
+            }
+
+            .overtime-details {
+                grid-template-columns: 1fr;
+            }
+
+            .print-section {
+                grid-template-columns: 1fr;
+            }
+
+            .session-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .scanner-section,
+            .manual-entry,
+            .actions,
+            .print-section,
+            .note,
+            .breadcrumb,
+            .btn {
+                display: none !important;
+            }
+            .exit-card {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="{% url 'home' %}">🏠 Home</a> → 
+            <span>🚗 Exit Parking</span>
+        </div>
+
+        <div class="exit-card">
+            <!-- Scanner Section -->
+            <div id="scannerSection">
+                <div class="header">
+                    <div class="header-icon">🚗</div>
+                    <h1>Exit Parking</h1>
+                    <p>Scan your QR code or enter booking details to exit</p>
+                    <div class="live-badge">
+                        <div class="live-dot"></div>
+                        <span>LIVE CALCULATION</span>
+                    </div>
+                </div>
+
+                <!-- QR Scanner -->
+                <div class="scanner-section">
+                    <h3>📱 Scan Your Booking QR Code</h3>
+                    <div id="qr-reader"></div>
+                    <div class="qr-placeholder" id="qrPlaceholder" onclick="startQRScanner()">
+                        <div class="scan-line"></div>
+                        <span>📷</span>
+                        <p style="font-size: 0.9rem; margin-top: 1rem; color: #666;">Click to start scanning</p>
+                    </div>
+                    <div class="scanner-instruction">
+                        🟩 Open your booking confirmation and scan the QR code<br>
+                        💡 Make sure the QR code is clearly visible and well-lit
+                    </div>
+                    <button class="btn btn-primary" onclick="startQRScanner()">
+                        📸 Start QR Scanner
+                    </button>
+                </div>
+
+                <div class="divider">
+                    <span>OR</span>
+                </div>
+
+                <!-- Manual Entry -->
+                <div class="manual-entry">
+                    <h3>🔍 Manual Booking Verification</h3>
+                    <form id="manualForm" method="POST" action="{% url 'verify_exit' %}">
+                        {% csrf_token %}
+                        <div class="input-grid">
+                            <div class="input-group">
+                                <label>📋 Booking ID</label>
+                                <input type="text" name="booking_id" id="bookingId" placeholder="PK-12345" required />
+                            </div>
+                            <div class="input-group">
+                                <label>🚗 Vehicle Number</label>
+                                <input type="text" name="vehicle_number" id="vehicleNumber" placeholder="MH12AB1234" style="text-transform: uppercase;" required />
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            🔍 Verify & Continue
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Session Details (Shown after verification) -->
+            <div id="sessionDetails" class="session-details {% if booking %}active{% endif %}">
+                {% if booking %}
+                <div class="header">
+                    <div class="header-icon">✅</div>
+                    <h1>Booking Verified</h1>
+                    <p>Review your parking session details</p>
+                </div>
+
+                <!-- Session Info -->
+                <div class="session-info">
+                    <div class="session-header">
+                        <span class="booking-id">ID: #{{ booking.id }}</span>
+                        <span class="status-badge {% if is_overtime %}overtime{% else %}active{% endif %}">
+                            {% if is_overtime %}⏰ Overtime{% else %}✅ On Time{% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="vehicle-icon">
+                                {% if booking.vehicle.vehicle_type == 'car' %}🚗
+                                {% elif booking.vehicle.vehicle_type == 'bike' %}🏍️
+                                {% else %}⚡{% endif %}
+                            </div>
+                            <label>Vehicle Number</label>
+                            <div class="value">{{ booking.vehicle.license_plate }}</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Vehicle Type</label>
+                            <div class="value">{{ booking.vehicle.get_vehicle_type_display }}</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Parking Slot</label>
+                            <div class="value">{{ booking.slot.slot_number }}</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Parking Lot</label>
+                            <div class="value">{{ booking.slot.parking_lot.name }}</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Entry Time</label>
+                            <div class="value">{{ booking.entry_time|date:"h:i A" }}</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Current Time</label>
+                            <div class="value" id="currentTime" style="color: #4caf50;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Duration Display -->
+                <div class="duration-card">
+                    <h2 id="totalDuration">{{ total_duration }}</h2>
+                    <p>Total Parking Duration</p>
+                    <div class="real-time-timer">
+                        <span>🔄</span>
+                        <span>Updating every second...</span>
+                    </div>
+                </div>
+
+                <!-- ✅ NEW: MONTHLY PASS CHECK -->
+                {% if has_monthly_pass %}
+                <!-- ========================================
+                     MONTHLY PASS HOLDER - FREE EXIT
+                     ======================================== -->
+                <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 30px; border-radius: 15px; text-align: center; margin: 30px 0; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);">
+                    <div style="font-size: 64px; margin-bottom: 15px;">🎫</div>
+                    <h2 style="font-size: 32px; margin-bottom: 15px; font-weight: 800;">✅ Monthly Pass Holder</h2>
+                    <p style="font-size: 18px; margin-bottom: 25px; opacity: 0.95; line-height: 1.6;">
+                        Your parking is covered by your active monthly pass.<br>
+                        <strong>No charges apply!</strong> You can exit for FREE. 🎉
+                    </p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 25px 0;">
+                        <div style="background: rgba(255, 255, 255, 0.2); padding: 20px; border-radius: 12px; backdrop-filter: blur(10px);">
+                            <p style="margin: 0 0 8px 0; font-size: 14px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">Duration</p>
+                            <p style="margin: 0; font-size: 28px; font-weight: 700;">{{ total_duration }}</p>
+                        </div>
+                        <div style="background: rgba(255, 255, 255, 0.2); padding: 20px; border-radius: 12px; backdrop-filter: blur(10px);">
+                            <p style="margin: 0 0 8px 0; font-size: 14px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">Charges</p>
+                            <p style="margin: 0; font-size: 28px; font-weight: 700;">₹0</p>
+                        </div>
+                        <div style="background: rgba(255, 255, 255, 0.2); padding: 20px; border-radius: 12px; backdrop-filter: blur(10px);">
+                            <p style="margin: 0 0 8px 0; font-size: 14px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">Savings</p>
+                            <p style="margin: 0; font-size: 28px; font-weight: 700;">100%</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Benefits List -->
+                    <div style="background: rgba(255, 255, 255, 0.15); padding: 20px; border-radius: 12px; margin: 25px 0; text-align: left;">
+                        <h4 style="margin: 0 0 15px 0; font-size: 18px; font-weight: 700; text-align: center;">🎁 Monthly Pass Benefits</h4>
+                        <ul style="margin: 0; padding-left: 25px; line-height: 2;">
+                            <li>✅ Unlimited FREE parking (24/7)</li>
+                            <li>✅ No time limits or overtime charges</li>
+                            <li>✅ Priority exit lanes</li>
+                            <li>✅ Valid across all parking locations</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Exit Button -->
+                    <form method="POST" action="{% url 'process_exit' booking.id %}" style="margin-top: 25px;">
+                        {% csrf_token %}
+                        <input type="hidden" name="extra_amount" value="0">
+                        <button type="submit" class="btn-exit" style="background: white; color: #10b981; padding: 18px 40px; font-size: 18px; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; transition: all 0.3s; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2); width: 100%; max-width: 400px;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 20px rgba(0,0,0,0.2)';">
+                            🚪 Complete Exit (FREE)
+                        </button>
+                    </form>
+                    
+                    <p style="margin: 20px 0 0 0; font-size: 13px; opacity: 0.85;">
+                        ℹ️ Show this screen to the parking attendant for quick exit
+                    </p>
+                </div>
+
+                {% else %}
+                <!-- ========================================
+                     REGULAR USER - SHOW CHARGES
+                     ======================================== -->
+
+                <!-- Overtime Alert / No Overtime -->
+                {% if is_overtime %}
+                <div class="overtime-alert">
+                    <h3>⚠️ Extra Time Detected</h3>
+                    <div class="overtime-details">
+                        <div class="overtime-item">
+                            <label>Booked Duration</label>
+                            <div class="value" style="color: #333;">{{ booking.duration_hours }}h</div>
+                        </div>
+                        <div class="overtime-item">
+                            <label>Extra Time</label>
+                            <div class="value" id="extraTime">{{ extra_hours }}h</div>
+                        </div>
+                        <div class="overtime-item">
+                            <label>Hourly Rate</label>
+                            <div class="value">₹{{ hourly_rate }}</div>
+                        </div>
+                        <div class="overtime-item">
+                            <label>Extra Charges</label>
+                            <div class="value">₹<span id="extraCharges">{{ extra_amount }}</span></div>
+                        </div>
+                    </div>
+                    <p style="margin-top: 1rem; color: #666; font-size: 0.9rem;">
+                        💡 You parked longer than your booked duration. Extra charges will apply at ₹{{ hourly_rate }}/hour.
+                    </p>
+                </div>
+                {% else %}
+                <div class="no-overtime">
+                    <h3>✅ No Extra Charges</h3>
+                    <p style="color: #666; margin-top: 0.5rem;">
+                        You parked within your booked duration. You can exit now without any additional charges.
+                    </p>
+                </div>
+                {% endif %}
+
+                <!-- Fee Breakdown -->
+                <div class="fee-breakdown">
+                    <h3>💰 Payment Summary</h3>
+                    <div class="fee-row">
+                        <span>Base Parking Fee ({{ booking.duration_hours }}h)</span>
+                        <span>₹<span id="baseFee">{{ base_amount }}</span></span>
+                    </div>
+                    {% if is_overtime %}
+                    <div class="fee-row">
+                        <span>Extra Time Charges ({{ extra_hours }}h)</span>
+                        <span>₹<span id="extraFee">{{ extra_amount }}</span></span>
+                    </div>
+                    {% endif %}
+                    <div class="fee-row">
+                        <span>GST (18%)</span>
+                        <span>₹<span id="gstFee">{{ gst_amount }}</span></span>
+                    </div>
+                    <div class="fee-row">
+                        <span>Already Paid</span>
+                        <span style="color: #4caf50;">- ₹{{ booking.fee }}</span>
+                    </div>
+                    <div class="fee-row total">
+                        <span>{% if is_overtime %}Amount to Pay{% else %}Total Amount{% endif %}</span>
+                        <span>₹<span id="totalFee">{% if is_overtime %}{{ extra_total }}{% else %}0{% endif %}</span></span>
+                    </div>
+                </div>
+
+                <!-- Note -->
+                <div class="note">
+                    <strong>ℹ️ Note:</strong> 
+                    {% if is_overtime %}
+                    Please complete the payment to exit the parking area. Show this receipt to the parking attendant.
+                    {% else %}
+                    You can exit directly. No additional payment required. Show this to the parking attendant.
+                    {% endif %}
+                </div>
+
+                <!-- Actions -->
+                <form method="POST" action="{% url 'process_exit' booking.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="extra_amount" value="{% if is_overtime %}{{ extra_total }}{% else %}0{% endif %}">
+                    <div class="actions">
+                        <button type="button" class="btn btn-secondary" onclick="location.reload()">
+                            ← Back
+                        </button>
+                        {% if is_overtime %}
+                        <button type="submit" class="btn btn-success" onclick="return confirmExit()">
+                            💳 Pay ₹<span id="payAmount">{{ extra_total }}</span> & Exit
+                        </button>
+                        {% else %}
+                        <button type="submit" class="btn btn-success" onclick="return confirmExit()">
+                            ✅ Confirm Exit (No Payment)
+                        </button>
+                        {% endif %}
+                    </div>
+                </form>
+
+                <!-- Print Options -->
+                <div class="print-section">
+                    <button class="print-btn" onclick="window.print()">
+                        🖨️ Print Receipt
+                    </button>
+                    <button class="print-btn" onclick="downloadPDF()">
+                        📄 Download PDF
+                    </button>
+                    <button class="print-btn" onclick="sendEmail()">
+                        ✉️ Email Receipt
+                    </button>
+                </div>
+
+                {% endif %}
+                <!-- END OF MONTHLY PASS CHECK -->
+                
+                {% endif %}
+                <!-- END OF BOOKING CHECK -->
+            </div>
+
+            <!-- Success Message (Shown after exit) -->
+            <div id="successMessage" class="success-message {% if exit_success %}active{% endif %}">
+                <div class="success-icon">✅</div>
+                <h2>Exit Approved!</h2>
+                <p>{% if is_overtime %}Payment successful. {% endif %}Thank you for using Smart Parking System.</p>
+                
+                <!-- Gate Animation -->
+                <div class="gate-animation">
+                    <div class="gate {% if exit_success %}open{% endif %}" id="gateAnimation">
+                        <div class="gate-left"></div>
+                        <div class="gate-right"></div>
+                    </div>
+                </div>
+
+                <p style="font-size: 1.3rem; color: #4caf50; font-weight: 600; margin: 2rem 0;">
+                    🚗 You may now exit the parking area
+                </p>
+
+                {% if exit_details %}
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; margin: 2rem 0; text-align: left;">
+                    <h4 style="margin-bottom: 1rem; color: #333;">Exit Summary</h4>
+                    <div style="display: grid; gap: 0.5rem;">
+                        <p><strong>Exit Time:</strong> {{ exit_details.exit_time|date:"d M Y, h:i A" }}</p>
+                        <p><strong>Total Duration:</strong> {{ exit_details.total_duration }}</p>
+                        <p><strong>Amount Paid:</strong> ₹{{ exit_details.total_paid }}</p>
+                        <p><strong>Receipt ID:</strong> #{{ exit_details.receipt_id }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem;">
+                    <a href="{% url 'home' %}" class="btn btn-primary">
+                        🏠 Back to Home
+                    </a>
+                    <a href="{% url 'user_profile' %}" class="btn btn-secondary">
+                        📜 Parking History
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <h2 id="loadingTitle">Verifying Booking...</h2>
+            <p id="loadingText">Please wait</p>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let qrScanner = null;
+        let entryTime = new Date("{{ booking.entry_time|date:'Y-m-d H:i:s' }}");
+        let bookedHours = {{ booking.duration_hours|default:0 }};
+        let hourlyRate = {{ hourly_rate|default:20 }};
+        let isOvertime = {{ is_overtime|yesno:"true,false" }};
+
+        // Real-time clock update
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-IN', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true 
+            });
+            
+            const clockEl = document.getElementById('currentTime');
+            if (clockEl) {
+                clockEl.textContent = timeString;
+            }
+        }
+
+        // Real-time duration calculation
+        function updateDuration() {
+            if (!entryTime || isNaN(entryTime.getTime())) return;
+
+            const now = new Date();
+            const diffMs = now - entryTime;
+            
+            const hours = Math.floor(diffMs / (1000 * 60 * 60));
+            const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+            
+            const durationEl = document.getElementById('totalDuration');
+            if (durationEl) {
+                durationEl.textContent = `${hours}h ${minutes}m ${seconds}s`;
+            }
+
+            // Calculate extra time if overtime
+            if (hours >= bookedHours) {
+                const totalMinutes = Math.floor(diffMs / (1000 * 60));
+                const bookedMinutes = bookedHours * 60;
+                const extraMinutesTotal = totalMinutes - bookedMinutes;
+                
+                const extraHours = Math.floor(extraMinutesTotal / 60);
+                const extraMinutes = extraMinutesTotal % 60;
+                
+                const extraTimeEl = document.getElementById('extraTime');
+                if (extraTimeEl) {
+                    extraTimeEl.textContent = `${extraHours}h ${extraMinutes}m`;
+                }
+
+                // Calculate extra charges (round up to next hour)
+                const extraChargeHours = Math.ceil(extraMinutesTotal / 60);
+                const extraCharge = Math.max(0, extraChargeHours * hourlyRate);
+                
+                const extraChargesEl = document.getElementById('extraCharges');
+                if (extraChargesEl) {
+                    extraChargesEl.textContent = extraCharge;
+                }
+
+                // Update total fee
+                const extraFeeEl = document.getElementById('extraFee');
+                if (extraFeeEl) {
+                    extraFeeEl.textContent = extraCharge;
+                }
+                
+                const extraGst = Math.round(extraCharge * 0.18);
+                const gstFeeEl = document.getElementById('gstFee');
+                if (gstFeeEl) {
+                    gstFeeEl.textContent = extraGst;
+                }
+                
+                const total = extraCharge + extraGst;
+                const totalFeeEl = document.getElementById('totalFee');
+                if (totalFeeEl) {
+                    totalFeeEl.textContent = total;
+                }
+                
+                const payAmountEl = document.getElementById('payAmount');
+                if (payAmountEl) {
+                    payAmountEl.textContent = total;
+                }
+            }
+        }
+
+        // Start QR Scanner
+        function startQRScanner() {
+            const qrReaderEl = document.getElementById('qr-reader');
+            const placeholderEl = document.getElementById('qrPlaceholder');
+            
+            if (!qrReaderEl) return;
+
+            placeholderEl.style.display = 'none';
+            qrReaderEl.classList.add('active');
+
+            if (qrScanner) {
+                qrScanner.clear();
+            }
+
+            if (typeof Html5Qrcode === 'undefined') {
+                alert('❌ QR Scanner library not loaded.\n\nPlease use manual entry option.');
+                placeholderEl.style.display = 'flex';
+                qrReaderEl.classList.remove('active');
+                return;
+            }
+
+            qrScanner = new Html5Qrcode("qr-reader");
+            
+            qrScanner.start(
+                { facingMode: "environment" },
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                },
+                (decodedText, decodedResult) => {
+                    // QR Code detected
+                    qrScanner.stop().then(() => {
+                        processQRCode(decodedText);
+                    });
+                },
+                (errorMessage) => {
+                    // Error callback - silent
+                }
+            ).catch((err) => {
+                console.error("QR Scanner error:", err);
+                alert('❌ Camera access denied or not available.\n\nPlease use manual entry option.');
+                placeholderEl.style.display = 'flex';
+                qrReaderEl.classList.remove('active');
+            });
+        }
+
+        // Process QR Code
+        function processQRCode(qrData) {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.classList.add('active');
+            document.getElementById('loadingTitle').textContent = 'QR Code Detected!';
+            document.getElementById('loadingText').textContent = 'Fetching booking details...';
+
+            // Parse QR data (format: PK-12345 or JSON)
+            let bookingId = qrData;
+            if (qrData.startsWith('{')) {
+                try {
+                    const data = JSON.parse(qrData);
+                    bookingId = data.booking_id || data.id;
+                } catch (e) {
+                    console.error('JSON parse error:', e);
+                }
+            }
+
+            // Redirect to verify exit
+            setTimeout(() => {
+                window.location.href = `/parking/exit/?booking_id=${bookingId}`;
+            }, 1500);
+        }
+
+        // Manual form submission handler
+        document.getElementById('manualForm')?.addEventListener('submit', function(e) {
+            const bookingId = document.getElementById('bookingId').value.trim();
+            const vehicleNumber = document.getElementById('vehicleNumber').value.trim();
+
+            if (!bookingId || !vehicleNumber) {
+                e.preventDefault();
+                alert('⚠️ Please fill in all fields!');
+                return false;
+            }
+
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.classList.add('active');
+            document.getElementById('loadingTitle').textContent = 'Verifying Booking...';
+            document.getElementById('loadingText').textContent = 'Checking database...';
+        });
+
+        // Confirm exit
+        function confirmExit() {
+            {% if is_overtime %}
+            const amount = document.getElementById('totalFee').textContent;
+            return confirm(`💳 Proceed to pay ₹${amount}?\n\nThis will complete your parking session and open the exit gate.`);
+            {% else %}
+            return confirm('✅ Confirm exit?\n\nYou have no additional charges. The exit gate will open.');
+            {% endif %}
+        }
+
+        // Download PDF Receipt
+        function downloadPDF() {
+            alert('📄 Generating PDF receipt...\n\nThis feature will download your parking receipt.');
+            
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.classList.add('active');
+            document.getElementById('loadingTitle').textContent = 'Generating PDF...';
+            document.getElementById('loadingText').textContent = 'Please wait';
+
+            setTimeout(() => {
+                overlay.classList.remove('active');
+                window.location.href = '/parking/receipt/pdf/{{ booking.id }}/';
+            }, 2000);
+        }
+
+        // Send Email Receipt
+        function sendEmail() {
+            const email = prompt('📧 Enter your email address:', '{{ user.email }}');
+            
+            if (!email) return;
+            
+            if (!validateEmail(email)) {
+                alert('❌ Invalid email address!\n\nPlease enter a valid email.');
+                return;
+            }
+
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.classList.add('active');
+            document.getElementById('loadingTitle').textContent = 'Sending Email...';
+            document.getElementById('loadingText').textContent = `Sending to ${email}`;
+
+            setTimeout(() => {
+                overlay.classList.remove('active');
+                alert(`✅ Email Sent!\n\nReceipt has been sent to ${email}`);
+            }, 2000);
+        }
+
+        // Validate Email
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        // Auto-uppercase vehicle number
+        document.getElementById('vehicleNumber')?.addEventListener('input', function(e) {
+            e.target.value = e.target.value.toUpperCase();
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+P for print
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                window.print();
+            }
+            
+            // Escape to go back
+            if (e.key === 'Escape') {
+                if (document.getElementById('sessionDetails').classList.contains('active')) {
+                    const confirmed = confirm('⚠️ Go back to scanner?\n\nYour session details will be lost.');
+                    if (confirmed) {
+                        location.reload();
+                    }
+                }
+            }
+        });
+
+        // Prevent accidental page close
+        window.addEventListener('pagehide', function(e) {
+            if (document.getElementById('sessionDetails').classList.contains('active') && 
+                !document.getElementById('successMessage').classList.contains('active')) {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
+        });
+
+        // Initialize on page load
+        window.addEventListener('load', function() {
+            // Start real-time updates
+            updateClock();
+            updateDuration();
+            
+            setInterval(updateClock, 1000);
+            setInterval(updateDuration, 1000);
+
+            // Request notification permission
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+
+            // Auto-open gate animation if exit success
+            {% if exit_success %}
+            setTimeout(() => {
+                document.getElementById('gateAnimation')?.classList.add('open');
+                createConfetti();
+                playSuccessSound();
+            }, 500);
+            {% endif %}
+
+            console.log('💡 Keyboard Shortcuts:');
+            console.log('  Ctrl+P - Print receipt');
+            console.log('  Escape - Go back');
+        });
+
+        // Play success sound
+        function playSuccessSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+        }
+
+        // Create confetti effect
+        function createConfetti() {
+            const colors = ['#667eea', '#764ba2', '#4caf50', '#ff9800', '#2196f3'];
+            const confettiCount = 50;
+            
+            for (let i = 0; i < confettiCount; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.style.position = 'fixed';
+                    confetti.style.width = '10px';
+                    confetti.style.height = '10px';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.top = '-10px';
+                    confetti.style.opacity = '1';
+                    confetti.style.zIndex = '10000';
+                    confetti.style.borderRadius = '50%';
+                    confetti.style.pointerEvents = 'none';
+                    
+                    document.body.appendChild(confetti);
+                    
+                    const animation = confetti.animate([
+                        { transform: 'translateY(0) rotate(0deg)', opacity: 1 },
+                        { transform: `translateY(${window.innerHeight}px) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+                    ], {
+                        duration: 3000 + Math.random() * 2000,
+                        easing: 'cubic-bezier(.25, .46, .45, .94)'
+                    });
+                    
+                    animation.onfinish = () => confetti.remove();
+                }, i * 30);
+            }
+        }
+
+        // Show browser notification
+        function showNotification(title, body) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, {
+                    body: body,
+                    icon: '🚗',
+                    badge: '🚗'
+                });
+            }
+        }
+
+        // Send notification on overtime
+        {% if is_overtime %}
+        setTimeout(() => {
+            showNotification(
+                '⚠️ Overtime Parking',
+                'You have exceeded your booked duration. Extra charges apply.'
+            );
+        }, 1000);
+        {% endif %}
+    </script>
+</body>
+</html>

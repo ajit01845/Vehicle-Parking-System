@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCTV Monitoring | Manager Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .video-container {
+            position: relative;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+        }
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.7) 100%);
+            pointer-events: none;
+        }
+        .live-indicator {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .camera-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        @media (min-width: 768px) {
+            .camera-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (min-width: 1024px) {
+            .camera-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-video text-3xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">CCTV Monitoring</h1>
+                        <p class="text-sm text-purple-200">Live Camera Feeds</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-6">
+                    <a href="{% url 'manager_dashboard' %}" class="hover:text-purple-200 transition">
+                        <i class="fas fa-home mr-2"></i>Dashboard
+                    </a>
+                    <a href="{% url 'entry_verification' %}" class="hover:text-purple-200 transition">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Entry
+                    </a>
+                    <a href="{% url 'exit_verification' %}" class="hover:text-purple-200 transition">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Exit
+                    </a>
+                    <a href="{% url 'user_logout' %}" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-sign-out-alt mr-1"></i>Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Location Selector -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Select Parking Location</h2>
+                    <p class="text-gray-600">Choose a location to view live CCTV feeds</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <select onchange="window.location.href='?location='+this.value" 
+                            class="px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-semibold">
+                        <option value="">Select Location</option>
+                        {% for lot in assigned_lots %}
+                        <option value="{{ lot.id }}" {% if selected_lot.id == lot.id %}selected{% endif %}>
+                            🅿️ {{ lot.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    
+                    {% if selected_lot %}
+                    <button onclick="refreshFeeds()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-lg transition">
+                        <i class="fas fa-sync-alt mr-2"></i>Refresh Feeds
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if selected_lot %}
+        <!-- Camera Status Bar -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-xl shadow p-4 border-l-4 border-green-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-600 text-sm">Entry Cameras</p>
+                        <p class="text-2xl font-bold text-gray-800">{{ entry_cameras|length }}</p>
+                    </div>
+                    <i class="fas fa-sign-in-alt text-3xl text-green-500"></i>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow p-4 border-l-4 border-red-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-600 text-sm">Exit Cameras</p>
+                        <p class="text-2xl font-bold text-gray-800">{{ exit_cameras|length }}</p>
+                    </div>
+                    <i class="fas fa-sign-out-alt text-3xl text-red-500"></i>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow p-4 border-l-4 border-blue-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-600 text-sm">Parking Cameras</p>
+                        <p class="text-2xl font-bold text-gray-800">{{ parking_cameras|length }}</p>
+                    </div>
+                    <i class="fas fa-video text-3xl text-blue-500"></i>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow p-4 border-l-4 border-purple-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-600 text-sm">Overview Cameras</p>
+                        <p class="text-2xl font-bold text-gray-800">{{ overview_cameras|length }}</p>
+                    </div>
+                    <i class="fas fa-eye text-3xl text-purple-500"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Camera Feeds -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Live Camera Feeds (2/3 width) -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Entry Gate Cameras -->
+                {% if entry_cameras %}
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <div class="bg-green-100 p-2 rounded-lg mr-3">
+                            <i class="fas fa-sign-in-alt text-green-500"></i>
+                        </div>
+                        Entry Gate Cameras
+                        <span class="ml-3 bg-green-500 text-white px-3 py-1 rounded-full text-sm">
+                            {{ entry_cameras|length }} Active
+                        </span>
+                    </h3>
+                    
+                    <div class="camera-grid">
+                        {% for camera in entry_cameras %}
+                        <div class="video-container group relative">
+                            <!-- Video Placeholder (Replace with actual video stream) -->
+                            <div class="absolute inset-0 bg-gray-900 flex items-center justify-center">
+                                <div class="text-center text-white">
+                                    <i class="fas fa-video text-6xl mb-4 opacity-50"></i>
+                                    <p class="text-lg font-semibold">{{ camera.camera_name }}</p>
+                                    <p class="text-sm text-gray-400 mt-2">{{ camera.camera_ip }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        {% if camera.stream_url %}
+                                        <a href="{{ camera.stream_url }}" target="_blank" 
+                                           class="text-blue-400 hover:text-blue-300">
+                                            View Stream <i class="fas fa-external-link-alt ml-1"></i>
+                                        </a>
+                                        {% else %}
+                                        Stream URL not configured
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- Video Overlay with Info -->
+                            <div class="video-overlay">
+                                <div class="absolute top-4 left-4 right-4 flex justify-between items-start">
+                                    <div>
+                                        <div class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center space-x-2 live-indicator">
+                                            <span class="w-2 h-2 bg-white rounded-full"></span>
+                                            <span>LIVE</span>
+                                        </div>
+                                        <p class="text-white font-semibold mt-2">{{ camera.camera_name }}</p>
+                                    </div>
+                                    <button class="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-3 py-2 rounded-lg transition">
+                                        <i class="fas fa-expand"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="absolute bottom-4 left-4 right-4">
+                                    <div class="bg-black/50 backdrop-blur-sm rounded-lg px-4 py-2">
+                                        <p class="text-white text-sm font-semibold" id="time-{{ camera.id }}">Loading...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Exit Gate Cameras -->
+                {% if exit_cameras %}
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <div class="bg-red-100 p-2 rounded-lg mr-3">
+                            <i class="fas fa-sign-out-alt text-red-500"></i>
+                        </div>
+                        Exit Gate Cameras
+                        <span class="ml-3 bg-red-500 text-white px-3 py-1 rounded-full text-sm">
+                            {{ exit_cameras|length }} Active
+                        </span>
+                    </h3>
+                    
+                    <div class="camera-grid">
+                        {% for camera in exit_cameras %}
+                        <div class="video-container group relative">
+                            <div class="absolute inset-0 bg-gray-900 flex items-center justify-center">
+                                <div class="text-center text-white">
+                                    <i class="fas fa-video text-6xl mb-4 opacity-50"></i>
+                                    <p class="text-lg font-semibold">{{ camera.camera_name }}</p>
+                                    <p class="text-sm text-gray-400 mt-2">{{ camera.camera_ip }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        {% if camera.stream_url %}
+                                        <a href="{{ camera.stream_url }}" target="_blank" 
+                                           class="text-blue-400 hover:text-blue-300">
+                                            View Stream <i class="fas fa-external-link-alt ml-1"></i>
+                                        </a>
+                                        {% else %}
+                                        Stream URL not configured
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="video-overlay">
+                                <div class="absolute top-4 left-4 right-4 flex justify-between items-start">
+                                    <div>
+                                        <div class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center space-x-2 live-indicator">
+                                            <span class="w-2 h-2 bg-white rounded-full"></span>
+                                            <span>LIVE</span>
+                                        </div>
+                                        <p class="text-white font-semibold mt-2">{{ camera.camera_name }}</p>
+                                    </div>
+                                    <button class="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-3 py-2 rounded-lg transition">
+                                        <i class="fas fa-expand"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="absolute bottom-4 left-4 right-4">
+                                    <div class="bg-black/50 backdrop-blur-sm rounded-lg px-4 py-2">
+                                        <p class="text-white text-sm font-semibold" id="time-exit-{{ camera.id }}">Loading...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Parking Area Cameras -->
+                {% if parking_cameras %}
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                            <i class="fas fa-parking text-blue-500"></i>
+                        </div>
+                        Parking Area Cameras
+                        <span class="ml-3 bg-blue-500 text-white px-3 py-1 rounded-full text-sm">
+                            {{ parking_cameras|length }} Active
+                        </span>
+                    </h3>
+                    
+                    <div class="camera-grid">
+                        {% for camera in parking_cameras %}
+                        <div class="video-container group relative">
+                            <div class="absolute inset-0 bg-gray-900 flex items-center justify-center">
+                                <div class="text-center text-white">
+                                    <i class="fas fa-video text-6xl mb-4 opacity-50"></i>
+                                    <p class="text-lg font-semibold">{{ camera.camera_name }}</p>
+                                    <p class="text-sm text-gray-400 mt-2">{{ camera.location_description }}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="video-overlay">
+                                <div class="absolute top-4 left-4 right-4 flex justify-between items-start">
+                                    <div>
+                                        <div class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center space-x-2 live-indicator">
+                                            <span class="w-2 h-2 bg-white rounded-full"></span>
+                                            <span>LIVE</span>
+                                        </div>
+                                        <p class="text-white font-semibold mt-2">{{ camera.camera_name }}</p>
+                                    </div>
+                                    <button class="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-3 py-2 rounded-lg transition">
+                                        <i class="fas fa-expand"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Sidebar - Active Sessions & Quick Actions -->
+            <div class="space-y-6">
+                <!-- Active Sessions -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-car text-blue-500 mr-2"></i>
+                        Active Sessions
+                    </h3>
+                    
+                    <div class="space-y-3 max-h-96 overflow-y-auto">
+                        {% for session in active_sessions %}
+                        <div class="border-l-4 border-green-500 bg-gray-50 rounded-lg p-3">
+                            <div class="font-bold text-gray-800">{{ session.vehicle.license_plate }}</div>
+                            <p class="text-sm text-gray-600">
+                                <i class="fas fa-parking mr-1"></i>{{ session.slot.slot_number }}
+                            </p>
+                            <p class="text-xs text-gray-500 mt-1">
+                                Entry: {{ session.entry_time|date:"h:i A" }}
+                            </p>
+                            <button onclick="verifyVehicle('{{ session.vehicle.license_plate }}', '{{ session.id }}')"
+                                    class="mt-2 w-full bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition">
+                                <i class="fas fa-check mr-1"></i>Verify
+                            </button>
+                        </div>
+                        {% empty %}
+                        <p class="text-gray-500 text-sm text-center py-4">No active sessions</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-bolt text-yellow-500 mr-2"></i>
+                        Quick Actions
+                    </h3>
+                    
+                    <div class="space-y-3">
+                        <a href="{% url 'entry_verification' %}" 
+                           class="block bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg text-center transition">
+                            <i class="fas fa-sign-in-alt mr-2"></i>Entry Verification
+                        </a>
+                        
+                        <a href="{% url 'exit_verification' %}" 
+                           class="block bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-lg text-center transition">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Exit Verification
+                        </a>
+                        
+                        <button onclick="reportIncident()" 
+                                class="w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-3 rounded-lg transition">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>Report Incident
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Footage -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-film text-purple-500 mr-2"></i>
+                        Recent Footage
+                    </h3>
+                    
+                    <div class="space-y-2 max-h-64 overflow-y-auto">
+                        {% for footage in recent_footage|slice:":5" %}
+                        <div class="bg-gray-50 rounded-lg p-2 text-xs">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="font-semibold text-gray-800">{{ footage.camera.camera_name }}</span>
+                                <span class="text-gray-500">{{ footage.timestamp|date:"h:i A" }}</span>
+                            </div>
+                            {% if footage.vehicle_number_detected %}
+                            <p class="text-gray-600">🚗 {{ footage.vehicle_number_detected }}</p>
+                            {% endif %}
+                        </div>
+                        {% empty %}
+                        <p class="text-gray-500 text-sm text-center py-4">No recent footage</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <!-- No Location Selected -->
+        <div class="bg-white rounded-xl shadow-lg p-12 text-center">
+            <i class="fas fa-video text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">No Location Selected</h3>
+            <p class="text-gray-600">Please select a parking location from the dropdown above to view live CCTV feeds</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Update time displays
+        function updateTimes() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            
+            document.querySelectorAll('[id^="time-"]').forEach(element => {
+                element.textContent = timeString;
+            });
+        }
+        
+        updateTimes();
+        setInterval(updateTimes, 1000);
+
+        // Refresh feeds
+        function refreshFeeds() {
+            location.reload();
+        }
+
+        // Verify vehicle
+        function verifyVehicle(vehicleNumber, sessionId) {
+            if (confirm(`Verify vehicle ${vehicleNumber}?`)) {
+                alert('Vehicle verification feature - Integrate with backend API');
+            }
+        }
+
+        // Report incident
+        function reportIncident() {
+            window.location.href = "{% url 'security_incidents' %}";
+        }
+
+        // Auto-refresh every 60 seconds
+        setTimeout(() => {
+            location.reload();
+        }, 60000);
+    </script>
+</body>
+</html>
